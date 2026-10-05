@@ -1,0 +1,10 @@
+import { isValidObjectId } from 'mongoose';
+import { z } from 'zod';
+import { assertMutationRequest, currentSession } from '@/lib/auth';
+import { connectDb } from '@/lib/db';
+import { apiError } from '@/lib/http';
+import { ViewingProgress } from '@/models';
+
+const schema=z.object({contentType:z.enum(['movie','episode']),contentId:z.string(),seconds:z.number().min(0).max(1_000_000),duration:z.number().min(0).max(1_000_000),completed:z.boolean().optional()});
+export async function GET(request:Request){try{const session=await currentSession();if(!session)throw Object.assign(new Error('Authentication is required.'),{status:401,code:'AUTH_REQUIRED'});const url=new URL(request.url);const contentType=z.enum(['movie','episode']).parse(url.searchParams.get('contentType'));const contentId=String(url.searchParams.get('contentId')||'');if(!isValidObjectId(contentId))throw Object.assign(new Error('Content was not found.'),{status:404,code:'NOT_FOUND'});await connectDb();const value=await ViewingProgress.findOne({user:session.user.id,contentType,contentId}).lean();return Response.json({progress:value?{seconds:Number(value.seconds||0),duration:Number(value.duration||0),completed:Boolean(value.completed)}:null},{headers:{'Cache-Control':'private, no-store'}});}catch(error){return apiError(error);}}
+export async function POST(request:Request){try{const session=await currentSession();if(!session)throw Object.assign(new Error('Authentication is required.'),{status:401,code:'AUTH_REQUIRED'});await assertMutationRequest(request,session);const input=schema.parse(await request.json());if(!isValidObjectId(input.contentId))throw Object.assign(new Error('Content was not found.'),{status:404,code:'NOT_FOUND'});await connectDb();await ViewingProgress.updateOne({user:session.user.id,contentType:input.contentType,contentId:input.contentId},{$set:{seconds:input.seconds,duration:input.duration,completed:input.completed??(input.duration>0&&input.seconds/input.duration>.92),lastViewedAt:new Date()}},{upsert:true});return Response.json({ok:true});}catch(error){return apiError(error);}}

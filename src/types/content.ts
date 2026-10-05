@@ -94,6 +94,7 @@ export type SubtitleRecord = {
   seriesId?: string;
   episodeId?: string;
   contentSlug: string;
+  contentHref?: string;
   contentTitle: string;
   contentPosterUrl: string;
   language: string;

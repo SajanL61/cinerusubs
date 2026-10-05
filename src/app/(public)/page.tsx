@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { Info, ShieldCheck } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -9,6 +10,7 @@ import { SeriesCard } from '@/components/tv/series-card';
 import { getMovies, getSeries, getSubtitles } from '@/services/catalog';
 
 export const dynamic = 'force-dynamic';
+export const metadata: Metadata = { alternates: { canonical: '/' } };
 
 export default async function HomePage() {
   const [movies, series, subtitles] = await Promise.all([getMovies(), getSeries(), getSubtitles()]);

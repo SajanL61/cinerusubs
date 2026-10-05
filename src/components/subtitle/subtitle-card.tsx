@@ -9,7 +9,7 @@ function size(bytes: number) {
 
 export function SubtitleCard({ subtitle, compact = false }: { subtitle: SubtitleRecord; compact?: boolean }) {
   return <article className={`subtitle-card ${compact ? 'compact' : ''}`}>
-    {!compact && <Link className="subtitle-poster" href={`/movies/${subtitle.contentSlug}`}><Image src={subtitle.contentPosterUrl} alt="" fill sizes="76px" /></Link>}
+    {!compact && <Link className="subtitle-poster" href={subtitle.contentHref ?? `/movies/${subtitle.contentSlug}`}><Image src={subtitle.contentPosterUrl} alt="" fill sizes="76px" /></Link>}
     <div className="subtitle-main"><div className="subtitle-title"><div><span>{subtitle.language} Subtitle</span><h3>{subtitle.contentTitle}</h3></div>{subtitle.verified && <BadgeCheck aria-label="Verified subtitle" />}</div>
       <Link className="translator-line" href={`/translator/${subtitle.translatorSlug}`}>{subtitle.translatorAvatarUrl && <span><Image src={subtitle.translatorAvatarUrl} alt="" fill sizes="24px" /></span>}Translated by <b>{subtitle.translatorName}</b></Link>
       <div className="release-matches">{subtitle.releaseMatches.map((match) => <span key={match}>{match}</span>)}</div>

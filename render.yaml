@@ -1,46 +1,43 @@
 services:
   - type: web
-    name: clothing-store-web
+    name: cinerusubs-web
     runtime: node
     plan: standard
     buildCommand: npm ci && npm run build
     startCommand: npm start
-    healthCheckPath: /health
+    healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 4001
+      - key: NEXT_PUBLIC_SITE_URL
+        sync: false
+      - key: NEXT_PUBLIC_SITE_NAME
+        value: CineruSubs
+      - key: CINERUSUBS_DEMO_MODE
+        value: false
       - key: MONGODB_URI
         sync: false
-      - key: PUBLIC_ORIGIN
-        sync: false
+      - key: MONGODB_DB
+        value: cinerusubs
       - key: SESSION_SECRET
         generateValue: true
-      - key: TRACKING_PEPPER
+      - key: DOWNLOAD_SIGNING_SECRET
         generateValue: true
-      - key: STORE_NAME
+      - key: R2_ACCOUNT_ID
         sync: false
-      - key: WHATSAPP_NUMBER
+      - key: R2_ACCESS_KEY_ID
         sync: false
-  - type: worker
-    name: clothing-store-jobs
-    runtime: node
-    plan: standard
-    buildCommand: npm ci && npm run build
-    startCommand: npm run worker:prod
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: MONGODB_URI
+      - key: R2_SECRET_ACCESS_KEY
         sync: false
-      - key: PUBLIC_ORIGIN
+      - key: R2_BUCKET_NAME
+        value: cinerusubs
+      - key: R2_PUBLIC_ASSET_BASE_URL
+        value: https://assets.cinerusubs.com
+      - key: R2_DOWNLOAD_BASE_URL
+        value: https://dl.cinerusubs.com
+      - key: TMDB_API_TOKEN
         sync: false
-      - key: SESSION_SECRET
-        sync: false
-      - key: TRACKING_PEPPER
-        sync: false
-      - key: STORE_NAME
-        sync: false
-      - key: WHATSAPP_NUMBER
+      - key: TURNSTILE_SECRET_KEY
         sync: false

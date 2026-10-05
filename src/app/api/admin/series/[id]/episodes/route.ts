@@ -1,0 +1,9 @@
+import { isValidObjectId } from 'mongoose';
+import { z } from 'zod';
+import { assertMutationRequest, requirePermission } from '@/lib/auth';
+import { connectDb } from '@/lib/db';
+import { apiError } from '@/lib/http';
+import { AuditLog, Episode, Season, Series } from '@/models';
+import { RIGHTS_STATUSES } from '@/types/content';
+const schema=z.object({seasonId:z.string(),seasonNumber:z.number().int().min(0).max(500),episodeNumber:z.number().int().min(0).max(2000),title:z.string().trim().min(1).max(240),slug:z.string().trim().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),overview:z.string().trim().min(10).max(8000),runtime:z.number().int().min(0).max(1500),releaseDate:z.coerce.date(),thumbnailUrl:z.string().trim().min(1).max(2000),rightsStatus:z.enum(RIGHTS_STATUSES),publicationStatus:z.enum(['draft','published','archived'])});
+export async function POST(request:Request,{params}:RouteContext<'/api/admin/series/[id]/episodes'>){try{const session=await requirePermission('content.update');await assertMutationRequest(request,session);const{id}=await params;const input=schema.parse(await request.json());if(!isValidObjectId(id)||!isValidObjectId(input.seasonId))throw Object.assign(new Error('Series or season was not found.'),{status:404,code:'NOT_FOUND'});await connectDb();const[series,season]=await Promise.all([Series.exists({_id:id}),Season.findOne({_id:input.seasonId,series:id})]);if(!series||!season)throw Object.assign(new Error('Series or season was not found.'),{status:404,code:'NOT_FOUND'});const episode=await Episode.create({...input,series:id,season:input.seasonId});await AuditLog.create({actor:session.user.id,action:'episode.create',entity:'Episode',entityId:String(episode._id),metadata:{series:id,season:input.seasonId,episodeNumber:episode.episodeNumber}});return Response.json({id:String(episode._id)},{status:201});}catch(error){return apiError(error);}}

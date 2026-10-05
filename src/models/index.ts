@@ -203,6 +203,12 @@ const commentSchema = new Schema(
 );
 commentSchema.index({ targetType: 1, targetId: 1, status: 1, createdAt: -1 });
 
+const commentLikeSchema = new Schema(
+  { user: { type: Schema.Types.ObjectId, ref: 'User', required: true }, comment: { type: Schema.Types.ObjectId, ref: 'Comment', required: true, index: true } },
+  { timestamps: true },
+);
+commentLikeSchema.index({ user: 1, comment: 1 }, { unique: true });
+
 const ratingSchema = new Schema(
   { user: { type: Schema.Types.ObjectId, ref: 'User', required: true }, targetType: { type: String, enum: ['movie', 'series', 'subtitle'], required: true }, targetId: { type: Schema.Types.ObjectId, required: true }, value: { type: Number, min: 1, max: 10, required: true } },
   { timestamps: true },
@@ -285,6 +291,7 @@ export const Genre = existingOrCreate('Genre', taxonomySchema);
 export const Language = existingOrCreate('Language', taxonomySchema.clone());
 export const Collection = existingOrCreate('Collection', collectionSchema);
 export const Comment = existingOrCreate('Comment', commentSchema);
+export const CommentLike = existingOrCreate('CommentLike', commentLikeSchema);
 export const Rating = existingOrCreate('Rating', ratingSchema);
 export const Watchlist = existingOrCreate('Watchlist', watchlistSchema);
 export const ViewingProgress = existingOrCreate('ViewingProgress', progressSchema);
@@ -301,7 +308,7 @@ export const RateLimitEvent = existingOrCreate('RateLimitEvent', rateLimitSchema
 
 export const cineruModels = [
   User, Session, Movie, Series, Season, Episode, Subtitle, TranslatorProfile, MediaAsset, MediaVersion, Genre, Language,
-  Collection, Comment, Rating, Watchlist, ViewingProgress, DownloadEvent, SearchEvent, TakedownRequest, SiteSetting,
+  Collection, Comment, CommentLike, Rating, Watchlist, ViewingProgress, DownloadEvent, SearchEvent, TakedownRequest, SiteSetting,
   HomepageSection, AuditLog, Report, Notification, ContactMessage, RateLimitEvent,
 ];
 

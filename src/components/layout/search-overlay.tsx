@@ -5,11 +5,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
-type Suggestion = { type: string; title: string; subtitle: string; slug: string; image?: string };
+type Suggestion = { type: string; title: string; subtitle: string; slug: string; href?: string; image?: string };
 const RECENT_KEY = 'cinerusubs-recent-searches-v1';
 const trending = ['Sinhala subtitles', 'Open movies', 'Animation', 'Classic cinema', 'TV episodes'];
 
 function destination(item: Suggestion) {
+  if (item.href) return item.href;
   if (item.type === 'movie') return `/movies/${item.slug}`;
   if (item.type === 'series') return `/tv/${item.slug}`;
   if (item.type === 'translator') return `/translator/${item.slug}`;

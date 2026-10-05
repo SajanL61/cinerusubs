@@ -30,7 +30,11 @@ export function assertProductionEnvironment() {
   if (env.NODE_ENV !== 'production') return;
   const missing: string[] = [];
   if (!env.MONGODB_URI) missing.push('MONGODB_URI');
+  if (!env.R2_ACCOUNT_ID) missing.push('R2_ACCOUNT_ID');
+  if (!env.R2_ACCESS_KEY_ID) missing.push('R2_ACCESS_KEY_ID');
+  if (!env.R2_SECRET_ACCESS_KEY) missing.push('R2_SECRET_ACCESS_KEY');
   if (env.SESSION_SECRET.startsWith('development-')) missing.push('SESSION_SECRET');
   if (env.DOWNLOAD_SIGNING_SECRET.startsWith('development-')) missing.push('DOWNLOAD_SIGNING_SECRET');
+  if (!env.NEXT_PUBLIC_SITE_URL.startsWith('https://')) missing.push('NEXT_PUBLIC_SITE_URL (HTTPS)');
   if (missing.length) throw new Error(`Production launch blocked: configure ${missing.join(', ')}`);
 }

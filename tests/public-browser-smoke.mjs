@@ -14,14 +14,16 @@ const context = await browser.newContext({ baseURL, viewport: { width: 1440, hei
 const page = await context.newPage();
 const pageErrors = [];
 const consoleErrors = [];
+const imageWarnings = [];
 page.on('pageerror', (error) => pageErrors.push(error.message));
-page.on('console', (message) => { if (message.type() === 'error') consoleErrors.push(message.text()); });
+page.on('console', (message) => { const value=message.text(); if (message.type() === 'error') consoleErrors.push(value); if (/invalid "position"|Largest Contentful Paint/.test(value)) imageWarnings.push(value); });
 
-for (const route of ['/', '/movies', '/tv', '/subtitles', '/discover', '/about', '/contact', '/takedown']) {
+const routes = ['/', '/movies', '/tv', '/tv/open-cinema-sessions', '/tv/open-cinema-sessions/season-1/episode-1', '/subtitles', '/discover', '/genres', '/languages', '/about', '/contact', '/takedown', '/login', '/register'];
+for (const route of routes) {
   const response = await page.goto(route, { waitUntil: 'networkidle' });
   expect(response?.status(), `${route} should respond successfully`).toBe(200);
   await expect(page.locator('main')).toBeVisible();
-  await expect(page.locator('footer')).toBeVisible();
+  await expect(page.locator('.site-footer')).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `${route} should not overflow`).toBe(true);
 }
 
@@ -42,12 +44,30 @@ await expect(page.getByText('Full media is not available from CineruSubs')).toBe
 await expect(page.getByRole('heading', { name: 'Subtitles' })).toBeVisible();
 await page.screenshot({ path: path.join(artifactDir, 'movie-desktop.png'), fullPage: true });
 
+await page.goto('/admin');
+await expect(page).toHaveURL(/\/login\?returnTo=%2Fadmin/);
+
+const viewports = [360, 390, 430, 768, 1024, 1366, 1440, 1920];
+for (const width of viewports) {
+  await page.setViewportSize({ width, height: width < 700 ? 844 : 1000 });
+  for (const route of ['/']) {
+    const response = await page.goto(route, { waitUntil: 'domcontentloaded' });
+    expect(response?.status(), `${route} at ${width}px should respond`).toBe(200);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `${route} at ${width}px should not overflow`).toBe(true);
+  }
+  if (width < 700) await expect(page.locator('.mobile-bottom-nav')).toBeVisible();
+  else await expect(page.locator('.mobile-bottom-nav')).toBeHidden();
+}
+
 await page.setViewportSize({ width: 390, height: 844 });
 await page.goto('/', { waitUntil: 'networkidle' });
-await expect(page.locator('.mobile-bottom-nav')).toBeVisible();
-expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 await page.screenshot({ path: path.join(artifactDir, 'home-mobile.png'), fullPage: true });
 
 if (pageErrors.length) throw new Error(`Browser page errors: ${pageErrors.join(' | ')}`);
-process.stdout.write(`${JSON.stringify({ routes: 8, search: true, movieDetail: true, desktopOverflow: false, mobileOverflow: false }, null, 2)}\n`);
-await browser.close();
+if (consoleErrors.length) throw new Error(`Browser console errors: ${consoleErrors.join(' | ')}`);
+if (imageWarnings.length) throw new Error(`Image optimization warnings: ${imageWarnings.join(' | ')}`);
+const result = { routes: routes.length, viewports, search: true, movieDetail: true, tvDetail: true, episodeDetail: true, auth: true, adminProtection: true, overflow: false, consoleErrors: 0 };
+await fs.writeFile(path.join(artifactDir, 'browser-result.json'), `${JSON.stringify(result, null, 2)}\n`);
+process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+await Promise.race([browser.close(), new Promise((resolve) => setTimeout(resolve, 5000))]);
+process.exit(0);

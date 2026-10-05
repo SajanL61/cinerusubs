@@ -6,13 +6,14 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Logo } from '@/components/ui/logo';
 import { SearchOverlay } from './search-overlay';
+import type { AuthUser } from '@/types/auth';
 
 const links = [
   ['/movies', 'Movies'], ['/tv', 'TV Series'], ['/subtitles', 'Subtitles'], ['/movies?sort=newest', 'New Releases'],
   ['/discover?sort=trending', 'Trending'], ['/genres', 'Genres'], ['/languages', 'Languages'],
 ] as const;
 
-export function SiteHeader() {
+export function SiteHeader({ user }: { user: AuthUser | null }) {
   const pathname = usePathname();
   const [compact, setCompact] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -58,7 +59,7 @@ export function SiteHeader() {
           </button>
           <Link className="header-icon" href="/watchlist" aria-label="Watchlist"><Bookmark /></Link>
           <Link className="header-icon desktop-notification" href="/profile/notifications" aria-label="Notifications"><Bell /></Link>
-          <Link className="profile-trigger" href="/login" aria-label="Sign in or open profile"><UserRound /><span>Sign in</span></Link>
+          <Link className="profile-trigger" href={user ? '/profile' : '/login'} aria-label={user ? `Open ${user.displayName}'s profile` : 'Sign in or open profile'}><UserRound /><span>{user ? user.displayName.split(' ')[0] : 'Sign in'}</span></Link>
         </div>
       </div>
     </header>
