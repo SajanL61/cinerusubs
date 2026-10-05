@@ -1,6 +1,11 @@
 node_modules/
 dist/
+.next/
+*.tsbuildinfo
+.artifacts/
 .env
+.env.local
+.env.production
 playwright-report/
 test-results/
 coverage/

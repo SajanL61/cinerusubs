@@ -1,0 +1,5 @@
+import type { MetadataRoute } from 'next';
+import { siteUrl } from '@/lib/env';
+import { getMovies, getSeries, getSubtitles } from '@/services/catalog';
+export const dynamic='force-dynamic';
+export default async function sitemap():Promise<MetadataRoute.Sitemap>{const [movies,series,subtitles]=await Promise.all([getMovies(),getSeries(),getSubtitles()]);const now=new Date();const staticPaths=['','/movies','/tv','/subtitles','/discover','/genres','/languages','/about','/contact','/privacy','/terms','/copyright','/takedown','/accessibility'];const staticEntries:MetadataRoute.Sitemap=staticPaths.map(path=>({url:`${siteUrl}${path}`,lastModified:now,changeFrequency:path===''?'daily':'weekly',priority:path===''?1:.7}));return [...staticEntries,...movies.map(movie=>({url:`${siteUrl}/movies/${movie.slug}`,lastModified:now,changeFrequency:'weekly' as const,priority:.8})),...series.map(item=>({url:`${siteUrl}/tv/${item.slug}`,lastModified:now,changeFrequency:'weekly' as const,priority:.8})),...subtitles.map(item=>({url:`${siteUrl}/movies/${item.contentSlug}#subtitles`,lastModified:new Date(item.updatedAt),changeFrequency:'monthly' as const,priority:.6}))]}

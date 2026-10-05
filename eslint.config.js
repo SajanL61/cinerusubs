@@ -1,8 +1,9 @@
-import js from '@eslint/js';
-import tseslint from 'typescript-eslint';
-export default tseslint.config(
-  { ignores: ['dist/**', 'node_modules/**'] },
-  js.configs.recommended,
-  ...tseslint.configs.recommended,
-  { rules: { '@typescript-eslint/no-explicit-any': 'off', '@typescript-eslint/no-namespace': 'off' } }
-);
+import { defineConfig, globalIgnores } from 'eslint/config';
+import nextVitals from 'eslint-config-next/core-web-vitals';
+import nextTypeScript from 'eslint-config-next/typescript';
+
+export default defineConfig([
+  ...nextVitals,
+  ...nextTypeScript,
+  globalIgnores(['.next/**', 'dist/**', 'node_modules/**', 'coverage/**', 'client/**', 'server/**', 'shared/**']),
+]);
