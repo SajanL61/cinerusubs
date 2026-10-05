@@ -1,0 +1,46 @@
+services:
+  - type: web
+    name: clothing-store-web
+    runtime: node
+    plan: standard
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4001
+      - key: MONGODB_URI
+        sync: false
+      - key: PUBLIC_ORIGIN
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: TRACKING_PEPPER
+        generateValue: true
+      - key: STORE_NAME
+        sync: false
+      - key: WHATSAPP_NUMBER
+        sync: false
+  - type: worker
+    name: clothing-store-jobs
+    runtime: node
+    plan: standard
+    buildCommand: npm ci && npm run build
+    startCommand: npm run worker:prod
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: PUBLIC_ORIGIN
+        sync: false
+      - key: SESSION_SECRET
+        sync: false
+      - key: TRACKING_PEPPER
+        sync: false
+      - key: STORE_NAME
+        sync: false
+      - key: WHATSAPP_NUMBER
+        sync: false
