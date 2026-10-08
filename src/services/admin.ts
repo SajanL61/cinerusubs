@@ -2,7 +2,7 @@ import 'server-only';
 import type { Model } from 'mongoose';
 import { connectDb } from '@/lib/db';
 import {
-  AuditLog, Comment, ContactMessage, DownloadEvent, Genre, HomepageSection, Language, MediaAsset, Movie, Report,
+  AuditLog, Comment, ContactMessage, DownloadEvent, DownloadMirror, Genre, HomepageSection, Language, MediaAsset, MediaVersion, Movie, Report,
   SearchEvent, Series, SiteSetting, Subtitle, TakedownRequest, TranslatorProfile, User,
 } from '@/models';
 
@@ -66,12 +66,25 @@ export async function getAdminOverview() {
 
 export async function getStorageStats() {
   await connectDb();
-  const rows = await MediaAsset.aggregate<{ _id: string; bytes: number; count: number }>([
-    { $match: { status: { $ne: 'disabled' } } },
-    { $group: { _id: '$kind', bytes: { $sum: { $ifNull: ['$size', 0] } }, count: { $sum: 1 } } },
-    { $sort: { bytes: -1 } },
+  const now = Date.now(); const active = { status: { $nin: ['disabled'] } };
+  const [rows, bucketRows, growthRows, largest, recent] = await Promise.all([
+    MediaAsset.aggregate<{ _id: string; bytes: number; count: number }>([{ $match: active }, { $group: { _id: '$kind', bytes: { $sum: { $ifNull: ['$size', 0] } }, count: { $sum: 1 } } }, { $sort: { bytes: -1 } }]),
+    MediaAsset.aggregate<{ _id: string; bytes: number; count: number }>([{ $match: active }, { $group: { _id: '$bucket', bytes: { $sum: { $ifNull: ['$size', 0] } }, count: { $sum: 1 } } }, { $sort: { bytes: -1 } }]),
+    Promise.all([86_400_000, 7 * 86_400_000, 30 * 86_400_000].map((window) => MediaAsset.aggregate<{ bytes: number; count: number }>([{ $match: { ...active, createdAt: { $gte: new Date(now - window) } } }, { $group: { _id: null, bytes: { $sum: { $ifNull: ['$size', 0] } }, count: { $sum: 1 } } }]).then((result) => result[0] ?? { bytes: 0, count: 0 }))),
+    MediaAsset.find(active).select('fileName kind bucket size status createdAt').sort({ size: -1 }).limit(8).lean(),
+    MediaAsset.find(active).select('fileName kind bucket size status createdAt uploadedBy').sort({ createdAt: -1 }).limit(8).lean(),
   ]);
-  return { rows, totalBytes: rows.reduce((sum, row) => sum + row.bytes, 0), totalFiles: rows.reduce((sum, row) => sum + row.count, 0) };
+  return { rows, bucketRows, growth: { today: growthRows[0], week: growthRows[1], month: growthRows[2] }, largest: largest.map((item) => JSON.parse(JSON.stringify(item)) as Record<string, unknown>), recent: recent.map((item) => JSON.parse(JSON.stringify(item)) as Record<string, unknown>), totalBytes: rows.reduce((sum, row) => sum + row.bytes, 0), totalFiles: rows.reduce((sum, row) => sum + row.count, 0) };
+}
+
+export async function getAdminMediaVersions(contentId: string) {
+  await connectDb();
+  const versions = await MediaVersion.find({ contentId, contentType: 'movie' }).select('-r2ObjectKey -streamingManifestKey').sort({ createdAt: -1 }).lean();
+  const mirrors = versions.length ? await DownloadMirror.find({ mediaVersion: { $in: versions.map((version) => version._id) } }).select('-url').sort({ priority: 1 }).lean() : [];
+  return versions.map((version) => ({
+    ...JSON.parse(JSON.stringify(version)) as Record<string, unknown>,
+    mirrors: mirrors.filter((mirror) => String(mirror.mediaVersion) === String(version._id)).map((mirror) => JSON.parse(JSON.stringify(mirror)) as Record<string, unknown>),
+  }));
 }
 
 export type { ResourceKey };

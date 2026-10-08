@@ -9,7 +9,7 @@ The application is a complete migration of the former clothing-store repository.
 - Next.js 16.3 App Router, React 19.3, and TypeScript
 - Tailwind CSS 4 plus a token-driven cinematic component layer
 - MongoDB Atlas and Mongoose
-- Cloudflare R2 direct uploads and short-lived signed access
+- Two private Cloudflare R2 buckets, multipart uploads, short-lived encrypted download tokens, and an optional range-aware download Worker
 - Argon2id passwords, opaque database sessions, CSRF protection, granular RBAC, and audit logs
 - Vitest and Playwright browser smoke tests
 
@@ -55,14 +55,14 @@ Set every required value in `.env.example`. Production startup fails closed when
 
 The platform enforces rights at both presentation and data-delivery boundaries. Full media is available only when both the title and media version are active and marked `owned`, `licensed`, or `public_domain`. `subtitle_only` and `unavailable` titles expose metadata, trailers, community features, and subtitle downloads only.
 
-R2 should be private. Configure CORS for direct `PUT` uploads from the exact site origin, use `assets.cinerusubs.com` only for intentionally public artwork, and route protected download traffic through `dl.cinerusubs.com` or the application’s short-lived signed routes. Never expose R2 credentials through `NEXT_PUBLIC_*` variables.
+Keep both `cinerusubs-media` and `cinerusubs-assets` private. Configure upload CORS for the exact site origin, expose only intentionally public artwork through `assets.cinerusubs.com`, and route protected file traffic through `dl.cinerusubs.com` or the built-in token-validated route. Never expose R2 credentials through `NEXT_PUBLIC_*` variables.
 
-See [operations](docs/OPERATIONS.md), [migration audit](docs/MIGRATION_AUDIT.md), and [environment template](.env.example) for deployment and security details.
+See [operations](docs/OPERATIONS.md), [download architecture](docs/DOWNLOAD_ARCHITECTURE.md), [SmartReact protection](docs/SMARTREACT_PROTECTION.md), [migration audit](docs/MIGRATION_AUDIT.md), and [environment template](.env.example) for deployment and security details.
 
 ## Main routes
 
 - Public: `/`, `/movies`, `/tv`, `/subtitles`, `/discover`, `/search`, `/watchlist`, `/translator/[slug]`
 - Accounts: `/login`, `/register`, `/profile`
-- Protected media: `/watch/[mediaId]`, `/download/[mediaId]`
+- Protected media: `/watch/[mediaId]`, branded `/download/[mediaId]`, and token issuance at `/api/download/[mediaVersionId]`
 - Admin: `/admin` and the content, subtitle, media, user, moderation, analytics, legal, settings, and audit sections beneath it
 - Health: `/api/health`

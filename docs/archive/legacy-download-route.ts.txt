@@ -1,0 +1,12 @@
+Legacy route retirement record
+
+The former executable `src/app/download/[mediaId]/route.ts` directly returned a short-lived R2 redirect. It was removed during the premium delivery upgrade.
+
+The replacement consists of:
+
+- the branded page at `src/app/(public)/download/[mediaId]/page.tsx`;
+- token issuance at `src/app/api/download/[mediaVersionId]/route.ts`;
+- live revalidation, counters, and final routing at `src/app/api/download/file/[token]/route.ts`;
+- optional byte delivery by the scoped Cloudflare Worker.
+
+No executable legacy source is retained in this archive.

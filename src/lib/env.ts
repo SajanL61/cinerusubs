@@ -12,9 +12,12 @@ const envSchema = z.object({
   R2_ACCOUNT_ID: z.string().optional(),
   R2_ACCESS_KEY_ID: z.string().optional(),
   R2_SECRET_ACCESS_KEY: z.string().optional(),
-  R2_BUCKET_NAME: z.string().default('cinerusubs'),
-  R2_PUBLIC_ASSET_BASE_URL: z.url().default('https://assets.cinerusubs.com'),
-  R2_DOWNLOAD_BASE_URL: z.url().default('https://dl.cinerusubs.com'),
+  R2_ENDPOINT: z.url().optional(),
+  R2_MEDIA_BUCKET: z.string().default('cinerusubs-media'),
+  R2_ASSETS_BUCKET: z.string().default('cinerusubs-assets'),
+  PUBLIC_ASSET_DOMAIN: z.url().default('https://assets.cinerusubs.com'),
+  DOWNLOAD_DOMAIN: z.url().default('https://dl.cinerusubs.com'),
+  DOWNLOAD_WORKER_ENABLED: z.enum(['true', 'false']).default('false'),
   TMDB_API_TOKEN: z.string().optional(),
   TURNSTILE_SECRET_KEY: z.string().optional(),
 });
@@ -33,6 +36,9 @@ export function assertProductionEnvironment() {
   if (!env.R2_ACCOUNT_ID) missing.push('R2_ACCOUNT_ID');
   if (!env.R2_ACCESS_KEY_ID) missing.push('R2_ACCESS_KEY_ID');
   if (!env.R2_SECRET_ACCESS_KEY) missing.push('R2_SECRET_ACCESS_KEY');
+  if (!env.R2_MEDIA_BUCKET) missing.push('R2_MEDIA_BUCKET');
+  if (!env.R2_ASSETS_BUCKET) missing.push('R2_ASSETS_BUCKET');
+  if (env.R2_MEDIA_BUCKET === env.R2_ASSETS_BUCKET) missing.push('separate R2_MEDIA_BUCKET and R2_ASSETS_BUCKET values');
   if (env.SESSION_SECRET.startsWith('development-')) missing.push('SESSION_SECRET');
   if (env.DOWNLOAD_SIGNING_SECRET.startsWith('development-')) missing.push('DOWNLOAD_SIGNING_SECRET');
   if (!env.NEXT_PUBLIC_SITE_URL.startsWith('https://')) missing.push('NEXT_PUBLIC_SITE_URL (HTTPS)');

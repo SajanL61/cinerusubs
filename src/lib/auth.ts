@@ -27,7 +27,7 @@ function userDto(document: Record<string, unknown>): AuthUser {
     email: String(document.email),
     role,
     permissions: effectivePermissions(role, document.permissions),
-    avatarUrl: document.avatarKey ? `${env.R2_PUBLIC_ASSET_BASE_URL}/${String(document.avatarKey)}` : undefined,
+    avatarUrl: document.avatarKey ? `${env.PUBLIC_ASSET_DOMAIN}/${String(document.avatarKey)}` : undefined,
     locale: document.locale === 'si' ? 'si' : 'en',
   };
 }

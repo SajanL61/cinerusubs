@@ -1,5 +1,7 @@
 import type { NextConfig } from 'next';
 
+const assetHost = new URL(process.env.PUBLIC_ASSET_DOMAIN ?? 'https://assets.cinerusubs.com').hostname;
+
 const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
@@ -38,7 +40,7 @@ const nextConfig: NextConfig = {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       { protocol: 'https', hostname: 'image.tmdb.org', pathname: '/t/p/**' },
-      { protocol: 'https', hostname: 'assets.cinerusubs.com', pathname: '/**' },
+      { protocol: 'https', hostname: assetHost, pathname: '/**' },
     ],
   },
   async headers() {
@@ -47,6 +49,7 @@ const nextConfig: NextConfig = {
       { source: '/admin/:path*', headers: [{ key: 'Cache-Control', value: 'private, no-store' }] },
       { source: '/profile/:path*', headers: [{ key: 'Cache-Control', value: 'private, no-store' }] },
       { source: '/watch/:path*', headers: [{ key: 'Cache-Control', value: 'private, no-store' }] },
+      { source: '/download/:path*', headers: [{ key: 'Cache-Control', value: 'private, no-store' }] },
       { source: '/sw.js', headers: [{ key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' }] },
     ];
   },

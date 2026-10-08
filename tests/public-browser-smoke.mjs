@@ -40,9 +40,19 @@ await page.screenshot({ path: path.join(artifactDir, 'home-desktop.png'), fullPa
 
 await page.goto('/movies/sintel-2010');
 await expect(page.getByRole('heading', { level: 1, name: 'Sintel' })).toBeVisible();
-await expect(page.getByText('Full media is not available from CineruSubs')).toBeVisible();
 await expect(page.getByRole('heading', { name: 'Subtitles' })).toBeVisible();
-await page.screenshot({ path: path.join(artifactDir, 'movie-desktop.png'), fullPage: true });
+await page.getByRole('button', { name: 'Download' }).first().click();
+const desktopDialog = page.getByRole('dialog', { name: 'Sintel' });
+await expect(desktopDialog).toBeVisible();
+await expect(desktopDialog.getByText('1080p', { exact: true })).toBeVisible();
+await expect(desktopDialog.getByText('Direct download unavailable').first()).toBeVisible();
+await page.screenshot({ path: path.join(artifactDir, 'movie-desktop.png') });
+await page.getByRole('button', { name: 'Close download options' }).click();
+
+await page.goto('/download/77a000000000000000000002');
+await expect(page.getByRole('heading', { level: 1, name: 'Sintel' })).toBeVisible();
+await expect(page.getByText('Secure delivery', { exact: true })).toBeVisible();
+await expect(page.getByText('Direct download is temporarily unavailable. Choose an active alternative source below.')).toBeVisible();
 
 await page.goto('/admin');
 await expect(page).toHaveURL(/\/login\?returnTo=%2Fadmin/);
@@ -62,11 +72,18 @@ for (const width of viewports) {
 await page.setViewportSize({ width: 390, height: 844 });
 await page.goto('/', { waitUntil: 'networkidle' });
 await page.screenshot({ path: path.join(artifactDir, 'home-mobile.png'), fullPage: true });
+await page.goto('/movies/sintel-2010', { waitUntil: 'networkidle' });
+await page.getByRole('button', { name: 'Download' }).first().click();
+await expect(page.getByRole('dialog', { name: 'Sintel' })).toBeVisible();
+const mobileDialog = await page.locator('.download-dialog').boundingBox();
+expect(mobileDialog?.height).toBeGreaterThanOrEqual(840);
+expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'mobile download dialog should not overflow').toBe(true);
+await page.screenshot({ path: path.join(artifactDir, 'download-mobile.png') });
 
 if (pageErrors.length) throw new Error(`Browser page errors: ${pageErrors.join(' | ')}`);
 if (consoleErrors.length) throw new Error(`Browser console errors: ${consoleErrors.join(' | ')}`);
 if (imageWarnings.length) throw new Error(`Image optimization warnings: ${imageWarnings.join(' | ')}`);
-const result = { routes: routes.length, viewports, search: true, movieDetail: true, tvDetail: true, episodeDetail: true, auth: true, adminProtection: true, overflow: false, consoleErrors: 0 };
+const result = { routes: routes.length, viewports, search: true, movieDetail: true, downloadDesktop: true, downloadMobile: true, preparationPage: true, tvDetail: true, episodeDetail: true, auth: true, adminProtection: true, overflow: false, consoleErrors: 0 };
 await fs.writeFile(path.join(artifactDir, 'browser-result.json'), `${JSON.stringify(result, null, 2)}\n`);
 process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
 await Promise.race([browser.close(), new Promise((resolve) => setTimeout(resolve, 5000))]);

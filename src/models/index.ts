@@ -54,10 +54,12 @@ const sessionSchema = new Schema(
 const movieSchema = new Schema(
   {
     title: { type: String, required: true, trim: true },
+    type: { type: String, enum: ['movie'], default: 'movie', immutable: true },
     originalTitle: String,
     sinhalaTitle: String,
     slug,
     overview: { type: String, required: true, maxlength: 8_000 },
+    shortDescription: { type: String, maxlength: 500 },
     year: { type: Number, required: true, index: true },
     releaseDate: Date,
     runtime: { type: Number, min: 0 },
@@ -76,6 +78,7 @@ const movieSchema = new Schema(
     tmdbId: { type: String, sparse: true, index: true },
     imdbRating: { type: Number, min: 0, max: 10 },
     tmdbRating: { type: Number, min: 0, max: 10 },
+    director: String,
     cast: [personCreditSchema],
     crew: [personCreditSchema],
     rightsStatus: rights,
@@ -84,6 +87,7 @@ const movieSchema = new Schema(
     editorPick: { type: Boolean, default: false, index: true },
     viewCount: { type: Number, default: 0, min: 0 },
     subtitleDownloadCount: { type: Number, default: 0, min: 0 },
+    mediaDownloadCount: { type: Number, default: 0, min: 0 },
     publicationStatus: publication,
     publishedAt: Date,
     scheduledAt: Date,
@@ -167,7 +171,7 @@ const translatorSchema = new Schema(
 const mediaAssetSchema = new Schema(
   {
     objectKey: { type: String, required: true, unique: true }, bucket: { type: String, required: true }, kind: { type: String, enum: ['poster', 'backdrop', 'subtitle', 'media', 'avatar', 'other'], required: true, index: true },
-    fileName: String, mimeType: String, size: { type: Number, min: 0 }, checksum: String, status: { type: String, enum: ['pending', 'active', 'missing', 'orphan', 'disabled'], default: 'pending', index: true },
+    fileName: String, mimeType: String, size: { type: Number, min: 0 }, checksum: String, status: { type: String, enum: ['pending', 'active', 'missing', 'orphan', 'disabled', 'pending_deletion'], default: 'pending', index: true },
     linkedModel: String, linkedId: Schema.Types.ObjectId, uploadedBy: { type: Schema.Types.ObjectId, ref: 'User' }, metadata: Schema.Types.Mixed,
   },
   { timestamps: true },
@@ -177,13 +181,34 @@ mediaAssetSchema.index({ kind: 1, status: 1, createdAt: -1 });
 const mediaVersionSchema = new Schema(
   {
     contentId: { type: Schema.Types.ObjectId, required: true, index: true }, contentType: { type: String, enum: ['movie', 'episode'], required: true, index: true },
-    quality: String, resolution: String, codec: String, container: String, audioCodec: String, audioLanguages: [String], subtitleLanguages: [String],
-    releaseType: String, fileSize: { type: Number, min: 1 }, r2ObjectKey: { type: String, required: true, unique: true }, streamingManifestKey: String,
-    rightsStatus: rights, regionRestrictions: [String], active: { type: Boolean, default: false, index: true }, createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
+    quality: { type: String, enum: ['480p', '720p', '1080p', '1440p', '2160p'], required: true }, resolution: { type: String, required: true },
+    releaseType: { type: String, enum: ['WEB-DL', 'WEBRip', 'BluRay', 'HDRip', 'DVDRip', 'Other'], required: true },
+    videoCodec: { type: String, enum: ['H264', 'H265', 'AV1'], required: true }, audioCodec: String,
+    container: { type: String, enum: ['MP4', 'MKV', 'WEBM'], required: true }, audioLanguages: [String], embeddedSubtitleLanguages: [String],
+    fileName: { type: String, required: true }, fileSize: { type: Number, min: 1, required: true }, r2ObjectKey: { type: String, required: true, unique: true },
+    storageBucket: { type: String, required: true }, streamingManifestKey: String,
+    rightsStatus: rights, regionRestrictions: [String], active: { type: Boolean, default: false, index: true }, downloadCount: { type: Number, default: 0, min: 0 },
+    deletionStatus: { type: String, enum: ['active', 'pending_deletion', 'retained', 'deleted'], default: 'active', index: true },
+    createdBy: { type: Schema.Types.ObjectId, ref: 'User' }, updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
   },
   { timestamps: true },
 );
 mediaVersionSchema.index({ contentId: 1, contentType: 1, active: 1 });
+mediaVersionSchema.index({ active: 1, rightsStatus: 1, createdAt: -1 });
+
+const downloadMirrorSchema = new Schema(
+  {
+    mediaVersion: { type: Schema.Types.ObjectId, ref: 'MediaVersion', required: true, index: true },
+    providerName: { type: String, required: true, trim: true, maxlength: 80 },
+    providerType: { type: String, enum: ['external', 'telegram', 'cloud_drive', 'custom'], required: true },
+    url: { type: String, required: true, select: false }, priority: { type: Number, default: 100, index: true },
+    supportsResume: { type: Boolean, default: false }, requiresLogin: { type: Boolean, default: false }, active: { type: Boolean, default: true, index: true },
+    lastCheckedAt: Date, healthStatus: { type: String, enum: ['unknown', 'online', 'unavailable'], default: 'unknown', index: true },
+    createdBy: { type: Schema.Types.ObjectId, ref: 'User' }, updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+  },
+  { timestamps: true },
+);
+downloadMirrorSchema.index({ mediaVersion: 1, active: 1, priority: 1 });
 
 const taxonomySchema = new Schema(
   { name: { type: String, required: true }, slug, description: String, localeNames: Schema.Types.Mixed, visible: { type: Boolean, default: true }, displayOrder: { type: Number, default: 0 } },
@@ -230,10 +255,18 @@ progressSchema.index({ user: 1, contentType: 1, contentId: 1 }, { unique: true }
 progressSchema.index({ user: 1, lastViewedAt: -1 });
 
 const downloadEventSchema = new Schema(
-  { user: { type: Schema.Types.ObjectId, ref: 'User', index: true }, kind: { type: String, enum: ['subtitle', 'media'], required: true, index: true }, targetId: { type: Schema.Types.ObjectId, required: true, index: true }, contentId: Schema.Types.ObjectId, ipHash: String, countryCode: String, userAgentFamily: String },
+  {
+    user: { type: Schema.Types.ObjectId, ref: 'User', index: true }, kind: { type: String, enum: ['subtitle', 'media'], required: true, index: true },
+    targetId: { type: Schema.Types.ObjectId, required: true, index: true }, contentId: Schema.Types.ObjectId,
+    mediaVersion: { type: Schema.Types.ObjectId, ref: 'MediaVersion', index: true }, movie: { type: Schema.Types.ObjectId, ref: 'Movie', index: true },
+    providerType: { type: String, enum: ['direct', 'external', 'telegram', 'cloud_drive', 'custom', 'subtitle'] },
+    status: { type: String, enum: ['started', 'redirected', 'failed'], default: 'started', index: true },
+    ipHash: String, countryCode: String, userAgentFamily: String, deviceCategory: { type: String, enum: ['mobile', 'tablet', 'desktop', 'unknown'], default: 'unknown' },
+  },
   { timestamps: true },
 );
 downloadEventSchema.index({ kind: 1, createdAt: -1 });
+downloadEventSchema.index({ mediaVersion: 1, createdAt: -1 });
 
 const searchEventSchema = new Schema(
   { user: { type: Schema.Types.ObjectId, ref: 'User', index: true }, query: { type: String, required: true, index: true }, normalizedQuery: { type: String, required: true, index: true }, resultCount: { type: Number, min: 0 }, ipHash: String, locale: String },
@@ -289,6 +322,7 @@ export const Subtitle = existingOrCreate('Subtitle', subtitleSchema);
 export const TranslatorProfile = existingOrCreate('TranslatorProfile', translatorSchema);
 export const MediaAsset = existingOrCreate('MediaAsset', mediaAssetSchema);
 export const MediaVersion = existingOrCreate('MediaVersion', mediaVersionSchema);
+export const DownloadMirror = existingOrCreate('DownloadMirror', downloadMirrorSchema);
 export const Genre = existingOrCreate('Genre', taxonomySchema);
 export const Language = existingOrCreate('Language', taxonomySchema.clone());
 export const Collection = existingOrCreate('Collection', collectionSchema);
@@ -309,7 +343,7 @@ export const ContactMessage = existingOrCreate('ContactMessage', contactMessageS
 export const RateLimitEvent = existingOrCreate('RateLimitEvent', rateLimitSchema);
 
 export const cineruModels = [
-  User, Session, Movie, Series, Season, Episode, Subtitle, TranslatorProfile, MediaAsset, MediaVersion, Genre, Language,
+  User, Session, Movie, Series, Season, Episode, Subtitle, TranslatorProfile, MediaAsset, MediaVersion, DownloadMirror, Genre, Language,
   Collection, Comment, CommentLike, Rating, Watchlist, ViewingProgress, DownloadEvent, SearchEvent, TakedownRequest, SiteSetting,
   HomepageSection, AuditLog, Report, Notification, ContactMessage, RateLimitEvent,
 ];

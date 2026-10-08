@@ -1,0 +1,21 @@
+[
+  {
+    "AllowedOrigins": [
+      "https://www.cinerusubs.com"
+    ],
+    "AllowedMethods": [
+      "GET",
+      "HEAD",
+      "PUT"
+    ],
+    "AllowedHeaders": [
+      "content-type",
+      "content-length",
+      "x-amz-*"
+    ],
+    "ExposeHeaders": [
+      "ETag"
+    ],
+    "MaxAgeSeconds": 3600
+  }
+]

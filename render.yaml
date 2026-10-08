@@ -31,12 +31,18 @@ services:
         sync: false
       - key: R2_SECRET_ACCESS_KEY
         sync: false
-      - key: R2_BUCKET_NAME
-        value: cinerusubs
-      - key: R2_PUBLIC_ASSET_BASE_URL
+      - key: R2_ENDPOINT
+        sync: false
+      - key: R2_MEDIA_BUCKET
+        value: cinerusubs-media
+      - key: R2_ASSETS_BUCKET
+        value: cinerusubs-assets
+      - key: PUBLIC_ASSET_DOMAIN
         value: https://assets.cinerusubs.com
-      - key: R2_DOWNLOAD_BASE_URL
+      - key: DOWNLOAD_DOMAIN
         value: https://dl.cinerusubs.com
+      - key: DOWNLOAD_WORKER_ENABLED
+        value: false
       - key: TMDB_API_TOKEN
         sync: false
       - key: TURNSTILE_SECRET_KEY

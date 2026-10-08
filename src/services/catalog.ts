@@ -4,6 +4,7 @@ import { useDemoData } from '@/lib/env';
 import { Episode, MediaVersion, Movie, Season, Series, Subtitle, TranslatorProfile } from '@/models';
 import { demoMovies, demoSeries, demoSubtitles, demoTranslators } from '@/data/demo';
 import type { DiscoverFilters, MovieRecord, SeriesRecord, SubtitleRecord, TranslatorRecord } from '@/types/content';
+import { getPublicMediaVersions } from '@/services/downloads';
 
 const normalize = (value: string) => value.normalize('NFKC').trim().toLocaleLowerCase();
 const fullMediaRights = ['owned', 'licensed', 'public_domain'];
@@ -210,7 +211,5 @@ export async function getSearchSuggestions(query: string) {
 }
 
 export async function getActiveMediaVersions(contentId: string, contentType: 'movie' | 'episode') {
-  if (useDemoData) return [];
-  await connectDb();
-  return MediaVersion.find({ contentId, contentType, active: true, rightsStatus: { $in: fullMediaRights } }).select('quality resolution releaseType fileSize rightsStatus').sort({ fileSize: -1 }).lean();
+  return getPublicMediaVersions(contentId, contentType);
 }
