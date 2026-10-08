@@ -101,7 +101,6 @@ const movieSchema = new Schema(
 movieSchema.index({ title: 'text', originalTitle: 'text', sinhalaTitle: 'text', overview: 'text' });
 movieSchema.index({ publicationStatus: 1, publishedAt: -1 });
 movieSchema.index({ publicationStatus: 1, trending: -1, viewCount: -1 });
-movieSchema.index({ genres: 1, languages: 1, year: -1 });
 
 const seriesSchema = new Schema(
   {

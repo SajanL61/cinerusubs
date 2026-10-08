@@ -12,6 +12,7 @@
     "build": "next build",
     "start": "next start -p 4001",
     "seed": "tsx scripts/seed.ts",
+    "test-db": "node --env-file=.env.local --import tsx scripts/test-db-connection.ts",
     "create-super-admin": "tsx scripts/create-super-admin.ts",
     "typecheck": "next typegen && tsc --noEmit",
     "lint": "eslint . --max-warnings=0",
