@@ -7,6 +7,7 @@ describe('curated demo catalog', () => {
     expect(demoMovies.every((movie) => movie.publicationStatus === 'published')).toBe(true);
     expect(demoMovies.every((movie) => movie.posterUrl.startsWith('/media/'))).toBe(true);
     expect(demoMovies.every((movie) => ['licensed', 'public_domain', 'subtitle_only'].includes(movie.rightsStatus))).toBe(true);
+    expect(demoMovies.every((movie) => movie.languages[0] && movie.releaseType && movie.videoQuality)).toBe(true);
   });
 
   it('keeps series, seasons, and episodes linked', () => {

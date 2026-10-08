@@ -8,6 +8,7 @@ export const adminMovieSchema = z.object({
   slug: z.string().trim().min(2).max(240).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/), overview: z.string().trim().min(20).max(8_000),
   year: z.coerce.number().int().min(1888).max(2200), releaseDate: z.coerce.date(), runtime: z.coerce.number().int().min(0).max(1_500), ageRating: z.string().trim().max(32),
   genres: z.array(z.string().trim().min(1)).max(24), languages: z.array(z.string().trim().min(1)).max(24), countries: z.array(z.string().trim().min(1)).max(24),
+  releaseType: z.string().trim().max(32).optional(), videoQuality: z.string().trim().max(16).optional(),
   cast: z.array(credit).max(100).default([]), crew: z.array(credit).max(100).default([]),
   posterUrl: z.string().trim().min(1).max(2_000), backdropUrl: z.string().trim().min(1).max(2_000), trailerUrl: optionalUrl,
   imdbId: z.string().trim().max(32).optional(), tmdbId: z.string().trim().max(32).optional(), imdbRating: z.coerce.number().min(0).max(10).optional(), tmdbRating: z.coerce.number().min(0).max(10).optional(),

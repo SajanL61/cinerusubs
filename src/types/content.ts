@@ -23,6 +23,8 @@ export type MovieRecord = {
   genres: string[];
   languages: string[];
   countries: string[];
+  releaseType?: string;
+  videoQuality?: string;
   posterUrl: string;
   backdropUrl: string;
   trailerUrl?: string;

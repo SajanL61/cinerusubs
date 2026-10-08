@@ -40,6 +40,7 @@ function toMovieRecord(document: Record<string, unknown>): MovieRecord {
     sinhalaTitle: document.sinhalaTitle ? String(document.sinhalaTitle) : undefined, slug: String(document.slug), overview: String(document.overview),
     year: Number(document.year), releaseDate, runtime: Number(document.runtime ?? 0), ageRating: String(document.ageRating ?? 'NR'),
     genres: (document.genres as string[] | undefined) ?? [], languages: (document.languages as string[] | undefined) ?? [], countries: (document.countries as string[] | undefined) ?? [],
+    releaseType: document.releaseType ? String(document.releaseType) : undefined, videoQuality: document.videoQuality ? String(document.videoQuality) : undefined,
     posterUrl: String(document.posterUrl ?? '/media/fallback-poster.svg'), backdropUrl: String(document.backdropUrl ?? '/media/fallback-backdrop.svg'),
     trailerUrl: document.trailerUrl ? String(document.trailerUrl) : undefined, imdbId: document.imdbId ? String(document.imdbId) : undefined,
     tmdbId: document.tmdbId ? String(document.tmdbId) : undefined, imdbRating: document.imdbRating ? Number(document.imdbRating) : undefined,
@@ -61,11 +62,16 @@ async function enrichMovieRecords(documents: Record<string, unknown>[]) {
     Subtitle.find({ movie: { $in: ids }, status: 'published' }).select('movie language').lean(),
   ]);
   const qualities = new Map<string, Set<string>>();
+  const primaryVersions = new Map<string, { releaseType?: string; videoQuality?: string }>();
   const languages = new Map<string, Set<string>>();
   for (const version of versions) {
     const key = String(version.contentId);
     const label = [version.resolution || version.quality, version.releaseType].filter(Boolean).join(' ');
     if (label) (qualities.get(key) ?? qualities.set(key, new Set()).get(key)!).add(String(label));
+    if (!primaryVersions.has(key)) primaryVersions.set(key, {
+      releaseType: version.releaseType ? String(version.releaseType) : undefined,
+      videoQuality: version.resolution || version.quality ? String(version.resolution || version.quality) : undefined,
+    });
   }
   for (const subtitle of subtitles) {
     const key = String(subtitle.movie);
@@ -73,6 +79,8 @@ async function enrichMovieRecords(documents: Record<string, unknown>[]) {
   }
   return records.map((record) => ({
     ...record,
+    releaseType: primaryVersions.get(record.id)?.releaseType ?? record.releaseType,
+    videoQuality: primaryVersions.get(record.id)?.videoQuality ?? record.videoQuality,
     qualities: fullMediaRights.includes(record.rightsStatus) ? [...(qualities.get(record.id) ?? [])] : [],
     subtitleLanguages: [...(languages.get(record.id) ?? [])],
   }));

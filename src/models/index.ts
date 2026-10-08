@@ -65,6 +65,8 @@ const movieSchema = new Schema(
     genres: [{ type: String, index: true }],
     languages: [{ type: String, index: true }],
     countries: [{ type: String, index: true }],
+    releaseType: { type: String, trim: true, maxlength: 32 },
+    videoQuality: { type: String, trim: true, maxlength: 16 },
     posterKey: objectKey,
     posterUrl: String,
     backdropKey: objectKey,
