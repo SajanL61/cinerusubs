@@ -1,5 +1,6 @@
 import { Bell, Bookmark, Clock3, ShieldCheck, Star, UserRound } from 'lucide-react';
 import Link from 'next/link';
+import { ChangePasswordForm } from '@/components/auth/change-password-form';
 import { requireUser } from '@/lib/auth';
 import { LogoutButton } from '@/components/auth/logout-button';
 
@@ -11,5 +12,5 @@ export default async function ProfilePage() {
     <Link href="/profile/notifications"><Bell/><b>Notifications</b><span>Release and subtitle updates</span></Link>
     <div><Clock3/><b>Viewing progress</b><span>Appears after you watch licensed media</span></div>
     <div><Star/><b>Ratings</b><span>Your movie and subtitle ratings</span></div>
-  </div><section className="profile-settings"><h2>Account</h2><dl><div><dt>Display name</dt><dd>{user.displayName}</dd></div><div><dt>Language</dt><dd>{user.locale === 'si' ? 'Sinhala' : 'English'}</dd></div><div><dt>Access role</dt><dd>{user.role.replace('_',' ')}</dd></div></dl>{user.permissions.includes('admin.access') && <Link className="action-button" href="/admin">Open administration</Link>}<LogoutButton/></section></section>;
+  </div><section className="profile-settings"><h2>Account</h2><dl><div><dt>Display name</dt><dd>{user.displayName}</dd></div><div><dt>Language</dt><dd>{user.locale === 'si' ? 'Sinhala' : 'English'}</dd></div><div><dt>Access role</dt><dd>{user.role.replace('_',' ')}</dd></div></dl>{user.permissions.includes('admin.access') && <Link className="action-button" href="/admin">Open administration</Link>}<LogoutButton/><ChangePasswordForm/></section></section>;
 }

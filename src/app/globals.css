@@ -197,3 +197,29 @@ img { display: block; max-width: 100%; }
 /* Adaptive player additions */
 .player-error { position: absolute; inset: 50% auto auto 50%; z-index: 2; width: min(90%,520px); transform: translate(-50%,-50%); padding: 18px; border: 1px solid rgba(255,255,255,.12); background: rgba(5,7,10,.9); color: #f4c36b; text-align: center; }.player-controls .player-volume { width: 72px; height: 3px; margin: 0; accent-color: var(--accent); }.player-controls .player-track { display: flex; align-items: center; gap: 3px; color: #fff; }.player-controls .player-track svg { width: 16px; }.player-controls .player-track select { margin-left: 0; }
 @media (max-width: 700px) { .player-controls .player-volume { display: none; }.player-controls .player-track svg { display: none; } }
+
+/* Account security */
+.admin-security-link { grid-column: 1/-1; min-height: 34px; padding: 0 10px; border: 1px solid #2d3440; color: #aeb6c2; display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 8px; }
+.admin-security-link:hover { border-color: var(--accent); color: var(--accent); }
+.admin-security-link svg { width: 14px; }
+.password-change { max-width: 720px; margin-top: 28px; padding-top: 26px; border-top: 1px solid var(--line); }
+.password-change>header { margin-bottom: 18px; display: flex; align-items: center; gap: 12px; }
+.password-change>header>svg { width: 24px; color: var(--accent); }
+.password-change>header h2 { margin: 0 0 4px; font-size: 20px; }
+.password-change>header p { margin: 0; color: var(--muted); font-size: 9px; }
+.password-change-form { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+.password-change-form>label { display: flex; flex-direction: column; gap: 7px; color: #d4d8df; font-size: 9px; font-weight: 750; }
+.password-change-form .password-current { grid-column: 1/-1; }
+.password-change-field { min-height: 46px; padding: 0 13px; border: 1px solid var(--line); background: var(--bg); display: flex; align-items: center; gap: 10px; }
+.password-change-field:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.password-change-field>svg { width: 16px; color: var(--muted); }
+.password-change-field input { width: 100%; border: 0; background: transparent; color: #fff; outline: 0; }
+.password-change-field button { border: 0; background: transparent; color: var(--muted); cursor: pointer; }
+.password-change-field button svg { width: 16px; }
+.password-change-hint,.password-change-error,.password-change-success { grid-column: 1/-1; margin: 0; font-size: 9px; }
+.password-change-hint { color: var(--muted-2); }
+.password-change-error { padding: 10px; border: 1px solid rgba(240,90,80,.3); background: rgba(240,90,80,.08); color: #ffaaa3; }
+.password-change-success { padding: 10px; border: 1px solid rgba(89,184,135,.3); background: rgba(89,184,135,.08); color: var(--success); }
+.password-change-form>.action-button { grid-column: 1/-1; justify-self: start; }
+.password-change-form>.action-button:disabled { opacity: .65; cursor: wait; }
+@media (max-width: 600px) { .password-change-form { grid-template-columns: 1fr; }.password-change-form .password-current,.password-change-hint,.password-change-error,.password-change-success,.password-change-form>.action-button { grid-column: auto; }.password-change-form>.action-button { width: 100%; justify-self: stretch; } }

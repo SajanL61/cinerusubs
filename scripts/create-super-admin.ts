@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
 import { z } from 'zod';
-import { connectDb } from '@/lib/db';
-import { hashPassword } from '@/lib/security';
-import { AuditLog, ensureCineruIndexes, User } from '@/models';
+import { connectDb } from '../src/lib/db';
+import argon2 from 'argon2';
+import { AuditLog, ensureCineruIndexes, User } from '../src/models/index';
 
 const input = z.object({
   name: z.string().trim().min(2).max(120),
@@ -14,7 +14,12 @@ try {
   await connectDb();
   await ensureCineruIndexes();
   const existing = await User.findOne({ email: input.email }).select('+passwordHash');
-  const passwordHash = await hashPassword(input.password);
+  const passwordHash = await argon2.hash(input.password, {
+    type: argon2.argon2id,
+    memoryCost: 19456,
+    timeCost: 2,
+    parallelism: 1,
+  });
   const user = existing
     ? await User.findByIdAndUpdate(existing._id, { name: input.name, displayName: input.name, passwordHash, role: 'super_admin', active: true, passwordChangedAt: new Date() }, { new: true })
     : await User.create({ name: input.name, displayName: input.name, email: input.email, passwordHash, role: 'super_admin', active: true, passwordChangedAt: new Date() });
