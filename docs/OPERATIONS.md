@@ -26,6 +26,34 @@ Use a dedicated MongoDB database named exactly `cinerusubs`. The application val
 
 - Create private R2 buckets named `cinerusubs-media` and `cinerusubs-assets`. Scope the application API token to object read/write for only these buckets. Media, subtitles, and HLS objects belong in the media bucket; posters, backdrops, avatars, and other presentation assets belong in the assets bucket.
 - Permit browser `PUT` requests only from exact production and authorized preview origins. Allow `GET`, `HEAD`, and `PUT`; expose `ETag`; and do not use `*` origins with credentials. Multipart completion depends on each part ETag.
+
+Apply this CORS policy to both `cinerusubs-assets` and `cinerusubs-media` (add separate exact preview origins only when they are intentionally authorized):
+
+```json
+[
+  {
+    "AllowedOrigins": [
+      "https://cinerusubs.onrender.com"
+    ],
+    "AllowedMethods": [
+      "GET",
+      "HEAD",
+      "PUT"
+    ],
+    "AllowedHeaders": [
+      "Content-Type",
+      "x-amz-meta-assetid",
+      "x-amz-meta-uploader"
+    ],
+    "ExposeHeaders": [
+      "ETag"
+    ],
+    "MaxAgeSeconds": 3600
+  }
+]
+```
+
+Keep `cinerusubs-media` private. The server-side R2 diagnostic verifies authenticated object write/HEAD/read/delete access, while the browser upload test verifies this CORS policy.
 - Map `assets.cinerusubs.com` only to intentionally public artwork. Do not expose `cinerusubs-media` through an R2 public-development URL.
 - The deployable Worker is in `cloudflare/download-worker`. Copy `wrangler.toml.example` to `wrangler.toml`, set `DOWNLOAD_SIGNING_SECRET` with `wrangler secret put`, and deploy. Enable `DOWNLOAD_WORKER_ENABLED=true` only after an invalid token returns `403` and a real range request returns `206` with `Accept-Ranges: bytes`.
 - The application checks title/version rights, active/deletion state, object scope, and rate limits before issuing a 90-second encrypted and signed token. The built-in gateway repeats live checks. The Worker verifies signature, expiry, and bucket/key scope; the short lifetime limits the window after a rights change.

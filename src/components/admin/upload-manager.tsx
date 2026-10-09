@@ -2,6 +2,7 @@
 
 import { Ban, CheckCircle2, CloudUpload, LoaderCircle, RotateCcw } from 'lucide-react';
 import { useRef, useState } from 'react';
+import { uploadApiFetch as fetch } from '@/lib/client/upload-json';
 
 const csrf=()=>decodeURIComponent(document.cookie.split('; ').find((item)=>item.startsWith('cinerusubs_csrf='))?.split('=').slice(1).join('=')||'');
 const mime=(file:File)=>file.type||({mkv:'video/x-matroska',m3u8:'application/vnd.apple.mpegurl'}[file.name.split('.').pop()?.toLocaleLowerCase()||'']||'application/octet-stream');

@@ -223,3 +223,20 @@ img { display: block; max-width: 100%; }
 .password-change-form>.action-button { grid-column: 1/-1; justify-self: start; }
 .password-change-form>.action-button:disabled { opacity: .65; cursor: wait; }
 @media (max-width: 600px) { .password-change-form { grid-template-columns: 1fr; }.password-change-form .password-current,.password-change-hint,.password-change-error,.password-change-success,.password-change-form>.action-button { grid-column: auto; }.password-change-form>.action-button { width: 100%; justify-self: stretch; } }
+
+/* R2 diagnostics */
+.r2-diagnostics { margin-bottom: 14px; padding: 18px; border: 1px solid rgba(44,177,158,.3); background: linear-gradient(120deg,rgba(44,177,158,.07),#11151d); }
+.r2-diagnostics>header { display: flex; align-items: center; gap: 12px; }
+.r2-diagnostics>header>svg { width: 26px; color: var(--teal); }
+.r2-diagnostics>header>div { flex: 1; }
+.r2-diagnostics h2 { margin: 0; font: 700 20px var(--display); }
+.r2-diagnostics header p { margin: 4px 0 0; color: #7d8694; font-size: 8px; }
+.r2-diagnostic-grid { margin-top: 15px; display: grid; grid-template-columns: repeat(2,1fr); gap: 9px; }
+.r2-diagnostic-grid article { padding: 14px; border: 1px solid #2d3540; background: #0d1117; display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; }
+.r2-diagnostic-grid h3 { grid-column: 1/-1; margin: 0 0 4px; font: 700 16px var(--display); }
+.r2-diagnostic-grid span { color: #d4d9e0; display: flex; align-items: center; gap: 6px; font-size: 8px; }
+.r2-diagnostic-grid span svg { width: 14px; }
+.r2-diagnostic-grid span.passed svg { color: var(--success); }
+.r2-diagnostic-grid span.failed svg { color: #e78b85; }
+.r2-diagnostic-grid small { grid-column: 1/-1; color: #e1a19c; font-size: 8px; }
+@media (max-width: 800px) { .r2-diagnostics>header { align-items: flex-start; flex-wrap: wrap; }.r2-diagnostics>header .admin-primary { width: 100%; }.r2-diagnostic-grid { grid-template-columns: 1fr; } }

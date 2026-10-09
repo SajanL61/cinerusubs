@@ -1,0 +1,8 @@
+import { isValidObjectId } from 'mongoose';
+import { assertMutationRequest, requirePermission } from '@/lib/auth';
+import { connectDb } from '@/lib/db';
+import { apiError } from '@/lib/http';
+import { deleteObject, r2BucketKindFromName } from '@/lib/r2';
+import { AuditLog, MediaAsset, MediaVersion } from '@/models';
+
+export async function DELETE(request:Request,{params}:RouteContext<'/api/admin/uploads/[assetId]'>){try{const session=await requirePermission('media.delete');await assertMutationRequest(request,session);const{assetId}=await params;if(!isValidObjectId(assetId))throw Object.assign(new Error('Asset was not found.'),{status:404,code:'NOT_FOUND'});await connectDb();const asset=await MediaAsset.findById(assetId);if(!asset)throw Object.assign(new Error('Asset was not found.'),{status:404,code:'NOT_FOUND'});const referenced=asset.linkedId||await MediaVersion.exists({r2ObjectKey:asset.objectKey,deletionStatus:{$ne:'deleted'}});if(referenced){asset.status='pending_deletion';await asset.save();await AuditLog.create({actor:session.user.id,action:'media.pending_deletion',entity:'MediaAsset',entityId:assetId,metadata:{objectKey:asset.objectKey,bucket:asset.bucket}});throw Object.assign(new Error('This asset is referenced. It was marked pending deletion and requires a separate confirmation after unlinking.'),{status:409,code:'ASSET_LINKED'});}await deleteObject(String(asset.objectKey),r2BucketKindFromName(asset.bucket));asset.status='disabled';await asset.save();await AuditLog.create({actor:session.user.id,action:'media.delete',entity:'MediaAsset',entityId:assetId,metadata:{objectKey:asset.objectKey,bucket:asset.bucket}});return Response.json({ok:true});}catch(error){return apiError(error);}}

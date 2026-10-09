@@ -74,6 +74,10 @@ export async function inspectObject(key: string, bucket: R2BucketKind = 'media')
   return getR2Client().send(new HeadObjectCommand({ Bucket: r2BucketName(bucket), Key: key }));
 }
 
+export async function writeObjectBytes(key: string, bytes: Uint8Array, contentType: string, bucket: R2BucketKind) {
+  await getR2Client().send(new PutObjectCommand({ Bucket: r2BucketName(bucket), Key: key, Body: bytes, ContentType: contentType }));
+}
+
 export async function readObjectBytes(key: string, bucket: R2BucketKind = 'media') {
   const response = await getR2Client().send(new GetObjectCommand({ Bucket: r2BucketName(bucket), Key: key }));
   if (!response.Body) throw Object.assign(new Error('Stored object could not be read.'), { status: 422, code: 'OBJECT_UNREADABLE' });

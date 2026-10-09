@@ -16,11 +16,41 @@ const extensions: Record<UploadKind, Set<string>> = {
 };
 const extensionOf = (fileName: string) => fileName.split('.').pop()?.toLocaleLowerCase() ?? '';
 
+function hasUnsafeFilePath(fileName: string) {
+  const normalized = fileName.normalize('NFKC');
+  return /[\u0000-\u001f\u007f]/.test(normalized)
+    || normalized.includes('/')
+    || normalized.includes('\\')
+    || /^[a-z]:/i.test(normalized)
+    || normalized === '.'
+    || normalized === '..';
+}
+
 export const presignUploadSchema = z.object({ kind: z.enum(uploadKinds), fileName: z.string().trim().min(1).max(240), contentType: z.string().trim().min(3).max(120), size: z.number().int().positive(), checksum: z.string().trim().max(128).optional(), linkedModel: z.string().trim().max(80).optional(), linkedId: z.string().trim().max(80).optional() }).superRefine((value,context)=>{
+  if(hasUnsafeFilePath(value.fileName))context.addIssue({code:'custom',path:['fileName'],message:'File name must not contain a path or control characters.'});
   if(value.size>limits[value.kind])context.addIssue({code:'custom',path:['size'],message:`File exceeds the ${Math.round(limits[value.kind]/1_000_000)} MB limit for ${value.kind}.`});
   if(!accepted[value.kind].test(value.contentType))context.addIssue({code:'custom',path:['contentType'],message:`File type is not allowed for ${value.kind}.`});
   if(!extensions[value.kind].has(extensionOf(value.fileName)))context.addIssue({code:'custom',path:['fileName'],message:`File extension is not allowed for ${value.kind}.`});
 });
+
+export const multipartPartSchema = z.object({
+  uploadId: z.string().trim().min(1).max(1_000),
+  partNumber: z.number().int().min(1).max(10_000),
+});
+
+export const multipartCompleteSchema = z.object({
+  uploadId: z.string().trim().min(1).max(1_000),
+  parts: z.array(z.object({
+    ETag: z.string().trim().min(1).max(500),
+    PartNumber: z.number().int().min(1).max(10_000),
+  })).min(1).max(10_000),
+}).superRefine((value, context) => {
+  value.parts.forEach((part, index) => {
+    if (part.PartNumber !== index + 1) context.addIssue({ code: 'custom', path: ['parts', index, 'PartNumber'], message: 'Multipart parts must be unique and ordered from 1.' });
+  });
+});
+
+export const multipartAbortSchema = z.object({ uploadId: z.string().trim().min(1).max(1_000) });
 
 export const uploadLimitFor = (kind: UploadKind) => limits[kind];
 

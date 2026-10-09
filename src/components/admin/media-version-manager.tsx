@@ -3,6 +3,7 @@
 import { Ban, CheckCircle2, CloudUpload, Link2, LoaderCircle, Pause, Play, RefreshCw, Save, Trash2 } from 'lucide-react';
 import { useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import { uploadApiFetch as fetch } from '@/lib/client/upload-json';
 
 type MirrorRow = { _id: string; providerName: string; providerType: string; active: boolean; supportsResume: boolean; requiresLogin: boolean; healthStatus: string; lastCheckedAt?: string };
 export type VersionRow = { _id: string; quality: string; resolution: string; releaseType: string; videoCodec: string; audioCodec?: string; container: string; fileName: string; fileSize: number; active: boolean; rightsStatus: string; deletionStatus: string; mirrors: MirrorRow[] };
@@ -13,8 +14,8 @@ const mime = (file: File) => file.type || ({ mkv: 'video/x-matroska', webm: 'vid
 const size = (bytes: number) => bytes >= 1_000_000_000 ? `${(bytes / 1_000_000_000).toFixed(2)} GB` : `${(bytes / 1_000_000).toFixed(1)} MB`;
 const delay = (milliseconds: number) => new Promise((resolve) => window.setTimeout(resolve, milliseconds));
 
-function put(url: string, body: Blob, signal: AbortSignal, onProgress: (loaded: number) => void) {
-  return new Promise<string>((resolve, reject) => { const request = new XMLHttpRequest(); request.open('PUT', url); request.upload.onprogress = (event) => onProgress(event.loaded); request.onerror = () => reject(new Error('R2 rejected the upload. Check bucket CORS and network access.')); request.onload = () => request.status >= 200 && request.status < 300 ? resolve(request.getResponseHeader('ETag') || '') : reject(new Error(`R2 rejected the upload (${request.status}).`)); const abort = () => { request.abort(); reject(new DOMException('Upload cancelled.', 'AbortError')); }; signal.addEventListener('abort', abort, { once: true }); request.onloadend = () => signal.removeEventListener('abort', abort); request.send(body); });
+function put(url: string, body: Blob, signal: AbortSignal, onProgress: (loaded: number) => void, headers: Record<string, string> = {}) {
+  return new Promise<string>((resolve, reject) => { const request = new XMLHttpRequest(); request.open('PUT', url); for (const [key, value] of Object.entries(headers)) request.setRequestHeader(key, value); request.upload.onprogress = (event) => onProgress(event.loaded); request.onerror = () => reject(new Error('R2 rejected the upload. Check bucket CORS and network access.')); request.onload = () => request.status >= 200 && request.status < 300 ? resolve(request.getResponseHeader('ETag') || '') : reject(new Error(`R2 rejected the upload (${request.status}).`)); const abort = () => { request.abort(); reject(new DOMException('Upload cancelled.', 'AbortError')); }; signal.addEventListener('abort', abort, { once: true }); request.onloadend = () => signal.removeEventListener('abort', abort); request.send(body); });
 }
 
 export function MediaVersionManager({ contentId, initialVersions }: { contentId: string; initialVersions: VersionRow[] }) {
@@ -40,7 +41,7 @@ export function MediaVersionManager({ contentId, initialVersions }: { contentId:
         }
         setProgress('Finalizing multipart upload…'); const complete = await fetch(`/api/admin/uploads/multipart/${ticket.assetId}/complete`, { method: 'POST', headers, body: JSON.stringify({ uploadId: ticket.uploadId, parts }), signal: controller.signal }); const result = await complete.json(); if (!complete.ok) throw new Error(result.error?.message || 'Multipart upload could not be finalized.'); return result.asset;
       }
-      const signedResponse = await fetch('/api/admin/uploads/presign', { method: 'POST', headers, body: JSON.stringify(body), signal: controller.signal }); const ticket = await signedResponse.json(); if (!signedResponse.ok) throw new Error(ticket.error?.message || 'Upload could not be signed.'); await put(ticket.uploadUrl, file, controller.signal, (loaded) => report(loaded)); const complete = await fetch(`/api/admin/uploads/${ticket.assetId}/complete`, { method: 'POST', headers: { 'x-csrf-token': csrf() }, signal: controller.signal }); const result = await complete.json(); if (!complete.ok) throw new Error(result.error?.message || 'Uploaded object could not be verified.'); return result.asset;
+      const signedResponse = await fetch('/api/admin/uploads/presign', { method: 'POST', headers, body: JSON.stringify(body), signal: controller.signal }); const ticket = await signedResponse.json(); if (!signedResponse.ok) throw new Error(ticket.error?.message || 'Upload could not be signed.'); await put(ticket.uploadUrl, file, controller.signal, (loaded) => report(loaded), ticket.headers); const complete = await fetch(`/api/admin/uploads/${ticket.assetId}/complete`, { method: 'POST', headers: { 'x-csrf-token': csrf() }, signal: controller.signal }); const result = await complete.json(); if (!complete.ok) throw new Error(result.error?.message || 'Uploaded object could not be verified.'); return result.asset;
     } catch (cause) { if (multipart) await fetch(`/api/admin/uploads/multipart/${multipart.assetId}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'x-csrf-token': csrf() }, body: JSON.stringify({ uploadId: multipart.uploadId }) }).catch(() => undefined); throw cause; }
   }
 

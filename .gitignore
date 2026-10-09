@@ -14,5 +14,5 @@ build/
 playwright-report/
 test-results/
 coverage/
-uploads/
+/uploads/
 *.log

@@ -1,6 +1,7 @@
 import JSZip from 'jszip';
 import { describe, expect, it } from 'vitest';
-import { presignUploadSchema, validateSubtitleArchive } from '../src/lib/validation/upload';
+import { multipartCompleteSchema, presignUploadSchema, validateSubtitleArchive } from '../src/lib/validation/upload';
+import { sanitizeStorageFileName } from '../src/lib/storage-key';
 
 describe('upload validation', () => {
   it('requires both an approved subtitle MIME type and extension', () => {
@@ -11,6 +12,19 @@ describe('upload validation', () => {
 
   it('rejects oversized uploads before issuing an R2 signature', () => {
     expect(presignUploadSchema.safeParse({ kind: 'subtitle', fileName: 'release.zip', contentType: 'application/zip', size: 5_000_001 }).success).toBe(false);
+  });
+
+  it('rejects paths and control characters while sanitizing safe display names', () => {
+    expect(presignUploadSchema.safeParse({ kind: 'poster', fileName: '../poster.png', contentType: 'image/png', size: 1200 }).success).toBe(false);
+    expect(presignUploadSchema.safeParse({ kind: 'poster', fileName: 'C:\\temp\\poster.png', contentType: 'image/png', size: 1200 }).success).toBe(false);
+    expect(presignUploadSchema.safeParse({ kind: 'poster', fileName: 'poster\u0000.png', contentType: 'image/png', size: 1200 }).success).toBe(false);
+    expect(sanitizeStorageFileName('My poster (2026).png')).toBe('My-poster-2026-.png');
+  });
+
+  it('requires unique multipart parts ordered from one', () => {
+    expect(multipartCompleteSchema.safeParse({ uploadId: 'upload-1', parts: [{ ETag: 'etag-1', PartNumber: 1 }, { ETag: 'etag-2', PartNumber: 2 }] }).success).toBe(true);
+    expect(multipartCompleteSchema.safeParse({ uploadId: 'upload-1', parts: [{ ETag: 'etag-2', PartNumber: 2 }, { ETag: 'etag-1', PartNumber: 1 }] }).success).toBe(false);
+    expect(multipartCompleteSchema.safeParse({ uploadId: 'upload-1', parts: [{ ETag: 'etag-1', PartNumber: 1 }, { ETag: 'etag-2', PartNumber: 1 }] }).success).toBe(false);
   });
 
   it('accepts subtitle-only ZIP contents and rejects executable entries', async () => {
