@@ -25,7 +25,7 @@ export async function POST(request: Request) {
       const metadata = { assetid: String(asset._id), uploader: session.user.id };
       const uploadUrl = await signedUploadUrl(objectKey, safeInput.contentType, metadata, 600, bucketKind);
       await AuditLog.create({ actor: session.user.id, action: 'media.presign', entity: 'MediaAsset', entityId: String(asset._id), metadata: { kind: safeInput.kind, fileName: safeInput.fileName, size: safeInput.size, bucket: asset.bucket } });
-      return Response.json({ assetId: String(asset._id), objectKey, uploadUrl, method: 'PUT', headers: { 'Content-Type': safeInput.contentType, 'x-amz-meta-assetid': String(asset._id), 'x-amz-meta-uploader': session.user.id }, expiresIn: 600 });
+      return Response.json({ assetId: String(asset._id), objectKey, uploadUrl, method: 'PUT', headers: { 'Content-Type': safeInput.contentType }, expiresIn: 600 });
     } catch (error) {
       await MediaAsset.deleteOne({ _id: asset._id }).catch(() => undefined);
       throw error;
