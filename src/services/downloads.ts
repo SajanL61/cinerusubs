@@ -26,7 +26,7 @@ function versionDto(row: LeanRecord, directAvailable: boolean, mirrors: Download
     id: String(row._id), _id: String(row._id), contentType: row.contentType as 'movie' | 'episode', quality: String(row.quality), resolution: String(row.resolution),
     releaseType: String(row.releaseType), videoCodec: row.videoCodec ? String(row.videoCodec) : undefined, audioCodec: row.audioCodec ? String(row.audioCodec) : undefined,
     container: row.container ? String(row.container) : undefined, audioLanguages: (row.audioLanguages as string[] | undefined) ?? [],
-    embeddedSubtitleLanguages: (row.embeddedSubtitleLanguages as string[] | undefined) ?? [], fileName: String(row.fileName ?? 'CineruSubs media'),
+    embeddedSubtitleLanguages: (row.embeddedSubtitleLanguages as string[] | undefined) ?? [], fileName: String(row.fileName ?? 'CineSeya.lk media'),
     fileSize: Number(row.fileSize ?? 0), rightsStatus: row.rightsStatus as RightsStatus, directAvailable, mirrors,
   };
 }

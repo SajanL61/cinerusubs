@@ -169,7 +169,7 @@ export async function getSubtitles(languageCode?: string): Promise<SubtitleRecor
       id: String(row._id), movieId: row.movie ? referenceId(row.movie) : undefined, seriesId: row.series ? referenceId(row.series) : episodeSeries ? referenceId(episodeSeries) : undefined,
       episodeId: row.episode ? referenceId(row.episode) : undefined, contentSlug, contentHref, contentTitle,
       contentPosterUrl: String(movie?.posterUrl ?? episode?.thumbnailUrl ?? series?.posterUrl ?? '/media/fallback-poster.svg'), language: String(row.language), languageCode: String(row.languageCode),
-      translatorId: referenceId(row.translator), translatorName: String(translator?.displayName ?? 'CineruSubs Translator'),
+      translatorId: referenceId(row.translator), translatorName: String(translator?.displayName ?? 'CineSeya.lk Translator'),
       translatorSlug: String(translator?.slug ?? ''), translatorAvatarUrl: translator?.avatarUrl ? String(translator.avatarUrl) : undefined,
       releaseMatches: (row.releaseMatches as string[] | undefined) ?? [], fps: row.fps ? Number(row.fps) : undefined, format: row.format as SubtitleRecord['format'],
       hearingImpaired: Boolean(row.hearingImpaired), fileName: String(row.fileName), fileSize: Number(row.fileSize), version: Number(row.version), verified: Boolean(row.verified),

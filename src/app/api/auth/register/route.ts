@@ -17,7 +17,7 @@ const schema = z.object({
 export async function POST(request: Request) {
   try {
     await enforceRateLimit(request, 'auth-register', 4, 60 * 60_000);
-    if (useDemoData) throw Object.assign(new Error('Account registration is available after connecting the isolated CineruSubs database.'), { status: 503, code: 'DATABASE_REQUIRED' });
+    if (useDemoData) throw Object.assign(new Error('Account registration is available after connecting the isolated CineSeya.lk database.'), { status: 503, code: 'DATABASE_REQUIRED' });
     const input = schema.parse(await request.json());
     await connectDb();
     if (await User.exists({ email: input.email })) throw Object.assign(new Error('An account already exists for that email.'), { status: 409, code: 'EMAIL_EXISTS' });

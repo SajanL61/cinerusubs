@@ -35,6 +35,6 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
     {!isLogin && <p className="password-hint">Use at least 12 characters with uppercase, lowercase and a number.</p>}
     {error && <p className="auth-error" role="alert">{error}</p>}
     <button className="auth-submit" disabled={pending} type="submit">{pending && <LoaderCircle className="spin"/>}{pending ? 'Please wait' : isLogin ? 'Sign in' : 'Create account'}</button>
-    <p className="auth-switch">{isLogin ? 'New to CineruSubs?' : 'Already have an account?'} <Link href={isLogin ? '/register' : '/login'}>{isLogin ? 'Create an account' : 'Sign in'}</Link></p>
+    <p className="auth-switch">{isLogin ? 'New to CineSeya.lk?' : 'Already have an account?'} <Link href={isLogin ? '/register' : '/login'}>{isLogin ? 'Create an account' : 'Sign in'}</Link></p>
   </form>;
 }

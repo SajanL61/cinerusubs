@@ -54,7 +54,7 @@ export function SiteHeader({ user }: { user: AuthUser | null }) {
           {links.map(([href, label]) => <Link key={href} className={pathname === href.split('?')[0] ? 'active' : ''} href={href}>{label}</Link>)}
         </nav>
         <div className="header-actions">
-          <button className="search-trigger" onClick={() => setSearchOpen(true)} aria-label="Search CineruSubs">
+          <button className="search-trigger" onClick={() => setSearchOpen(true)} aria-label="Search CineSeya.lk">
             <Search /><span>Search movies, series, subtitles</span><kbd>⌘ K</kbd>
           </button>
           <Link className="header-icon" href="/watchlist" aria-label="Watchlist"><Bookmark /></Link>
@@ -66,7 +66,7 @@ export function SiteHeader({ user }: { user: AuthUser | null }) {
     {menuOpen && <div className="mobile-drawer-backdrop" onMouseDown={(event) => event.target === event.currentTarget && setMenuOpen(false)}>
       <aside className="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation">
         <div className="drawer-head"><Logo /><button className="header-icon" aria-label="Close navigation" onClick={() => setMenuOpen(false)}><X /></button></div>
-        <button className="drawer-search" onClick={() => { setMenuOpen(false); setSearchOpen(true); }}><Search />Search CineruSubs</button>
+        <button className="drawer-search" onClick={() => { setMenuOpen(false); setSearchOpen(true); }}><Search />Search CineSeya.lk</button>
         <nav>{links.map(([href, label]) => <Link key={href} href={href} onClick={() => setMenuOpen(false)}>{label}<span>›</span></Link>)}</nav>
         <div className="drawer-account"><Link href="/watchlist">My watchlist</Link><Link href="/login">Sign in</Link></div>
       </aside>

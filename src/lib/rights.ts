@@ -17,7 +17,7 @@ export function assertMediaDistributionAllowed(rightsStatus: RightsStatus, activ
 export function rightsLabel(status: RightsStatus) {
   return ({
     subtitle_only: 'Subtitle release',
-    owned: 'CineruSubs owned',
+    owned: 'CineSeya.lk owned',
     licensed: 'Licensed media',
     public_domain: 'Public domain',
     unavailable: 'Currently unavailable',

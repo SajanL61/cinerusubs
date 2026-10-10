@@ -12,7 +12,7 @@ const schema = z.object({ email: z.email().max(254).transform((value) => value.t
 export async function POST(request: Request) {
   try {
     await enforceRateLimit(request, 'auth-login', 8, 15 * 60_000);
-    if (useDemoData) throw Object.assign(new Error('Account sign-in is available after connecting the isolated CineruSubs database.'), { status: 503, code: 'DATABASE_REQUIRED' });
+    if (useDemoData) throw Object.assign(new Error('Account sign-in is available after connecting the isolated CineSeya.lk database.'), { status: 503, code: 'DATABASE_REQUIRED' });
     const input = schema.parse(await request.json());
     await connectDb();
     const user = await User.findOne({ email: input.email }).select('+passwordHash');

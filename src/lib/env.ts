@@ -3,7 +3,7 @@ import { z } from 'zod';
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   NEXT_PUBLIC_SITE_URL: z.url().default('http://localhost:4001'),
-  NEXT_PUBLIC_SITE_NAME: z.string().default('CineruSubs'),
+  NEXT_PUBLIC_SITE_NAME: z.string().default('CineSeya.lk'),
   MONGODB_URI: z.string().optional(),
   MONGODB_DB: z.literal('cinerusubs').default('cinerusubs'),
   SESSION_SECRET: z.string().min(32).default('development-only-session-secret-change-now'),

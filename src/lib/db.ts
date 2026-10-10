@@ -9,8 +9,8 @@ const cache = globalWithMongoose.__cineruMongoose ?? { connection: null, promise
 globalWithMongoose.__cineruMongoose = cache;
 
 export async function connectDb() {
-  if (useDemoData) throw new Error('MongoDB is unavailable while CineruSubs demo mode is active');
-  if (env.MONGODB_DB !== DATABASE_NAME) throw new Error('CineruSubs must use the isolated cinerusubs database');
+  if (useDemoData) throw new Error('MongoDB is unavailable while CineSeya.lk demo mode is active');
+  if (env.MONGODB_DB !== DATABASE_NAME) throw new Error('CineSeya.lk must use the isolated cinerusubs database');
   if (cache.connection) {
     assertConnectedDatabase(cache.connection);
     return cache.connection;
@@ -27,9 +27,9 @@ export async function connectDb() {
 }
 
 export function assertCineruDatabaseName(databaseName: string | undefined) {
-  if (databaseName?.toLocaleLowerCase() === 'smartreact') throw new Error('CRITICAL: CineruSubs refused to connect to the protected SmartReact database.');
+  if (databaseName?.toLocaleLowerCase() === 'smartreact') throw new Error('CRITICAL: CineSeya.lk refused to connect to the protected SmartReact database.');
   if (databaseName !== DATABASE_NAME) {
-    throw new Error(`CRITICAL: CineruSubs expected database "${DATABASE_NAME}" but connected to "${databaseName ?? 'unknown'}".`);
+    throw new Error(`CRITICAL: CineSeya.lk expected database "${DATABASE_NAME}" but connected to "${databaseName ?? 'unknown'}".`);
   }
 }
 

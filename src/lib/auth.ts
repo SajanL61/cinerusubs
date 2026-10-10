@@ -33,7 +33,7 @@ function userDto(document: Record<string, unknown>): AuthUser {
 }
 
 export async function createSession(userId: string, request?: Request) {
-  if (useDemoData) throw Object.assign(new Error('Account services require the CineruSubs database.'), { status: 503, code: 'DATABASE_REQUIRED' });
+  if (useDemoData) throw Object.assign(new Error('Account services require the CineSeya.lk database.'), { status: 503, code: 'DATABASE_REQUIRED' });
   await connectDb();
   const token = randomToken();
   const csrf = randomToken(24);

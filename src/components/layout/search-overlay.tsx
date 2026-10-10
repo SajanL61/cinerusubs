@@ -54,7 +54,7 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
     localStorage.setItem(RECENT_KEY, JSON.stringify(next));
   };
 
-  return <div className="search-overlay" role="dialog" aria-modal="true" aria-label="Search CineruSubs">
+  return <div className="search-overlay" role="dialog" aria-modal="true" aria-label="Search CineSeya.lk">
     <div className="search-dialog">
       <div className="search-dialog-head"><div className="search-field"><Search /><input ref={inputRef} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search titles, actors, genres or translators…" aria-label="Search" /><kbd>ESC</kbd></div><button aria-label="Close search" onClick={onClose}><X /></button></div>
       <div className="search-dialog-body">

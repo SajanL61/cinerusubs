@@ -3,7 +3,7 @@ import { CatalogGrid } from '@/components/movie/catalog-grid';
 import { getMovies } from '@/services/catalog';
 import type { DiscoverFilters } from '@/types/content';
 
-export const metadata: Metadata = { title: 'Movies', description: 'Browse movies with Sinhala and English subtitle availability on CineruSubs.', alternates: { canonical: '/movies' } };
+export const metadata: Metadata = { title: 'Movies', description: 'Browse movies with Sinhala and English subtitle availability on CineSeya.lk.', alternates: { canonical: '/movies' } };
 export const dynamic = 'force-dynamic';
 
 export default async function MoviesPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {

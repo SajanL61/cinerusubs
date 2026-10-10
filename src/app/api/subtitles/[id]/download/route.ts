@@ -9,7 +9,7 @@ import { DownloadEvent, Subtitle } from '@/models';
 
 const ALLOWED_FORMATS = new Set(['srt','ass','vtt','zip']);
 const safeName = (name:string) => name.replace(/[^a-zA-Z0-9._-]/g,'_');
-function demoSrt(title:string){return `1\n00:00:01,000 --> 00:00:04,000\n${title} — CineruSubs demonstration subtitle\n\n2\n00:00:05,000 --> 00:00:09,000\nමෙය ආරක්ෂිත නිරූපණ උපසිරැසි ගොනුවකි.\n`;}
+function demoSrt(title:string){return `1\n00:00:01,000 --> 00:00:04,000\n${title} — CineSeya.lk demonstration subtitle\n\n2\n00:00:05,000 --> 00:00:09,000\nමෙය ආරක්ෂිත නිරූපණ උපසිරැසි ගොනුවකි.\n`;}
 
 export async function GET(request:Request,{params}:{params:Promise<{id:string}>}){
   try{

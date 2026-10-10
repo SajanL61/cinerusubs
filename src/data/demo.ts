@@ -92,7 +92,7 @@ export const demoMovies: MovieRecord[] = [
 export const demoSeries: SeriesRecord[] = [
   {
     id: '66b000000000000000000001', title: 'Open Cinema Sessions', sinhalaTitle: 'විවෘත සිනමා සැසි', slug: 'open-cinema-sessions',
-    overview: 'A CineruSubs editorial series examining open filmmaking, restoration, subtitles and the craft behind accessible cinema.',
+    overview: 'A CineSeya.lk editorial series examining open filmmaking, restoration, subtitles and the craft behind accessible cinema.',
     year: 2026, ageRating: 'U', genres: ['Documentary'], languages: ['English', 'Sinhala'], countries: ['Sri Lanka'],
     posterUrl: '/media/open-cinema-poster.svg', backdropUrl: '/media/open-cinema-backdrop.svg', tmdbRating: 8.2, status: 'Returning series',
     rightsStatus: 'owned', featured: true, trending: true,

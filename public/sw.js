@@ -1,5 +1,5 @@
-const CACHE_NAME = 'cinerusubs-shell-v1';
-const APP_SHELL = ['/', '/movies', '/tv', '/subtitles', '/discover', '/offline', '/icons/icon.svg'];
+const CACHE_NAME = 'cineseya-shell-v2';
+const APP_SHELL = ['/', '/movies', '/tv', '/subtitles', '/discover', '/offline', '/brand/cineseya-icon.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));
@@ -31,7 +31,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (url.pathname.startsWith('/_next/static/') || url.pathname.startsWith('/icons/') || url.pathname.startsWith('/media/')) {
+  if (url.pathname.startsWith('/_next/static/') || url.pathname.startsWith('/brand/') || url.pathname.startsWith('/icons/') || url.pathname.startsWith('/media/')) {
     event.respondWith(caches.match(request).then((cached) => cached || fetch(request)));
   }
 });
