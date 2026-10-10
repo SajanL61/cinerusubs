@@ -1,9 +1,9 @@
 'use client';
 
 import { BookmarkX } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useMemo, useSyncExternalStore } from 'react';
+import { SafeImage } from '@/components/ui/safe-image';
 
 const KEY = 'cinerusubs-watchlist-v1';
 type Item = { id: string; type: 'movie' | 'series'; slug: string; title: string; posterUrl: string; addedAt: string };
@@ -17,5 +17,5 @@ export function WatchlistLibrary() {
   const items: Item[] = useMemo(() => JSON.parse(raw), [raw]);
   if (!items.length) return <div className="watchlist-empty"><BookmarkX/><h2>Your watchlist is ready</h2><p>Save a movie or series from any card or title page and it will appear here. Sign in later to sync it across devices.</p><Link className="action-button" href="/discover">Discover titles</Link></div>;
   const remove = (id: string, type: string) => { const next = items.filter((item) => !(item.id === id && item.type === type)); localStorage.setItem(KEY, JSON.stringify(next)); dispatchEvent(new CustomEvent('cinerusubs-watchlist-change')); if(document.documentElement.dataset.authenticated==='true'){const csrf=decodeURIComponent(document.cookie.split('; ').find((entry)=>entry.startsWith('cinerusubs_csrf='))?.split('=').slice(1).join('=')||'');void fetch('/api/watchlist',{method:'POST',headers:{'Content-Type':'application/json','x-csrf-token':csrf},body:JSON.stringify({contentType:type,contentId:id,action:'remove'})});} };
-  return <div className="watchlist-grid">{items.map((item) => <article key={`${item.type}-${item.id}`}><Link href={item.type === 'movie' ? `/movies/${item.slug}` : `/tv/${item.slug}`}><span><Image src={item.posterUrl} alt={`${item.title} poster`} fill sizes="180px"/></span><h3>{item.title}</h3><p>{item.type === 'movie' ? 'Movie' : 'TV Series'}</p></Link><button onClick={() => remove(item.id,item.type)}>Remove</button></article>)}</div>;
+  return <div className="watchlist-grid">{items.map((item) => <article key={`${item.type}-${item.id}`}><Link href={item.type === 'movie' ? `/movies/${item.slug}` : `/tv/${item.slug}`}><span><SafeImage src={item.posterUrl} fallbackSrc="/media/fallback-poster.svg" alt={`${item.title} poster`} fill sizes="180px"/></span><h3>{item.title}</h3><p>{item.type === 'movie' ? 'Movie' : 'TV Series'}</p></Link><button onClick={() => remove(item.id,item.type)}>Remove</button></article>)}</div>;
 }

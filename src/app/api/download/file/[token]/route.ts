@@ -13,7 +13,7 @@ export async function GET(request: Request, { params }: RouteContext<'/api/downl
     const payload = verifyDownloadToken(token);
     const { version, content, asset } = await resolveAuthorizedMediaVersion(payload.mediaVersionId);
     if (payload.objectKey !== String(asset.objectKey) || payload.bucket !== String(asset.bucket)) throw Object.assign(new Error('The download authorization no longer matches this file.'), { status: 409, code: 'DOWNLOAD_CHANGED' });
-    const url = env.DOWNLOAD_WORKER_ENABLED === 'true'
+    const url = env.DOWNLOAD_WORKER_ENABLED === 'true' && env.DOWNLOAD_DOMAIN
       ? `${env.DOWNLOAD_DOMAIN.replace(/\/$/, '')}/v1/files/${token}`
       : await signedDownloadUrl(String(asset.objectKey), payload.fileName, 90, r2BucketKindFromName(asset.bucket));
     await Promise.all([

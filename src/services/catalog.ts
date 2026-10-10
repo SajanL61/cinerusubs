@@ -1,6 +1,7 @@
 import 'server-only';
 import { connectDb } from '@/lib/db';
 import { useDemoData } from '@/lib/env';
+import { resolvePublicAssetUrl } from '@/lib/assets';
 import { Episode, MediaVersion, Movie, Season, Series, Subtitle, TranslatorProfile } from '@/models';
 import { demoMovies, demoSeries, demoSubtitles, demoTranslators } from '@/data/demo';
 import type { DiscoverFilters, MovieRecord, SeriesRecord, SubtitleRecord, TranslatorRecord } from '@/types/content';
@@ -42,7 +43,7 @@ function toMovieRecord(document: Record<string, unknown>): MovieRecord {
     year: Number(document.year), releaseDate, runtime: Number(document.runtime ?? 0), ageRating: String(document.ageRating ?? 'NR'),
     genres: (document.genres as string[] | undefined) ?? [], languages: (document.languages as string[] | undefined) ?? [], countries: (document.countries as string[] | undefined) ?? [],
     releaseType: document.releaseType ? String(document.releaseType) : undefined, videoQuality: document.videoQuality ? String(document.videoQuality) : undefined,
-    posterUrl: String(document.posterUrl ?? '/media/fallback-poster.svg'), backdropUrl: String(document.backdropUrl ?? '/media/fallback-backdrop.svg'),
+    posterUrl: resolvePublicAssetUrl(document.posterUrl, '/media/fallback-poster.svg')!, backdropUrl: resolvePublicAssetUrl(document.backdropUrl, '/media/fallback-backdrop.svg')!,
     trailerUrl: document.trailerUrl ? String(document.trailerUrl) : undefined, imdbId: document.imdbId ? String(document.imdbId) : undefined,
     tmdbId: document.tmdbId ? String(document.tmdbId) : undefined, imdbRating: document.imdbRating ? Number(document.imdbRating) : undefined,
     tmdbRating: document.tmdbRating ? Number(document.tmdbRating) : undefined, cast: (document.cast as MovieRecord['cast'] | undefined) ?? [],
@@ -123,7 +124,7 @@ export async function getSeries(): Promise<SeriesRecord[]> {
         episodes: episodeRows.map((episode) => ({
           id: String(episode._id), seasonNumber: Number(episode.seasonNumber), episodeNumber: Number(episode.episodeNumber), title: String(episode.title),
           slug: String(episode.slug), overview: String(episode.overview ?? ''), runtime: Number(episode.runtime ?? 0), releaseDate: episode.releaseDate ? new Date(episode.releaseDate as Date).toISOString().slice(0, 10) : '',
-          thumbnailUrl: String(episode.thumbnailUrl ?? '/media/fallback-backdrop.svg'), subtitleLanguages: [...(languagesByEpisode.get(String(episode._id)) ?? [])], rightsStatus: episode.rightsStatus as SeriesRecord['rightsStatus'],
+          thumbnailUrl: resolvePublicAssetUrl(episode.thumbnailUrl, '/media/fallback-backdrop.svg')!, subtitleLanguages: [...(languagesByEpisode.get(String(episode._id)) ?? [])], rightsStatus: episode.rightsStatus as SeriesRecord['rightsStatus'],
         })),
       };
     }));
@@ -131,7 +132,7 @@ export async function getSeries(): Promise<SeriesRecord[]> {
       id: String(row._id), title: String(row.title), originalTitle: row.originalTitle ? String(row.originalTitle) : undefined,
       sinhalaTitle: row.sinhalaTitle ? String(row.sinhalaTitle) : undefined, slug: String(row.slug), overview: String(row.overview), year: Number(row.year),
       ageRating: String(row.ageRating ?? 'NR'), genres: (row.genres as string[] | undefined) ?? [], languages: (row.languages as string[] | undefined) ?? [],
-      countries: (row.countries as string[] | undefined) ?? [], posterUrl: String(row.posterUrl ?? '/media/fallback-poster.svg'), backdropUrl: String(row.backdropUrl ?? '/media/fallback-backdrop.svg'),
+      countries: (row.countries as string[] | undefined) ?? [], posterUrl: resolvePublicAssetUrl(row.posterUrl, '/media/fallback-poster.svg')!, backdropUrl: resolvePublicAssetUrl(row.backdropUrl, '/media/fallback-backdrop.svg')!,
       imdbRating: row.imdbRating ? Number(row.imdbRating) : undefined, tmdbRating: row.tmdbRating ? Number(row.tmdbRating) : undefined,
       status: String(row.status ?? 'Unknown'), rightsStatus: row.rightsStatus as SeriesRecord['rightsStatus'], seasons, featured: Boolean(row.featured), trending: Boolean(row.trending),
     } satisfies SeriesRecord;
@@ -168,9 +169,9 @@ export async function getSubtitles(languageCode?: string): Promise<SubtitleRecor
     return {
       id: String(row._id), movieId: row.movie ? referenceId(row.movie) : undefined, seriesId: row.series ? referenceId(row.series) : episodeSeries ? referenceId(episodeSeries) : undefined,
       episodeId: row.episode ? referenceId(row.episode) : undefined, contentSlug, contentHref, contentTitle,
-      contentPosterUrl: String(movie?.posterUrl ?? episode?.thumbnailUrl ?? series?.posterUrl ?? '/media/fallback-poster.svg'), language: String(row.language), languageCode: String(row.languageCode),
+      contentPosterUrl: resolvePublicAssetUrl(movie?.posterUrl ?? episode?.thumbnailUrl ?? series?.posterUrl, '/media/fallback-poster.svg')!, language: String(row.language), languageCode: String(row.languageCode),
       translatorId: referenceId(row.translator), translatorName: String(translator?.displayName ?? 'CineSeya.lk Translator'),
-      translatorSlug: String(translator?.slug ?? ''), translatorAvatarUrl: translator?.avatarUrl ? String(translator.avatarUrl) : undefined,
+      translatorSlug: String(translator?.slug ?? ''), translatorAvatarUrl: resolvePublicAssetUrl(translator?.avatarUrl),
       releaseMatches: (row.releaseMatches as string[] | undefined) ?? [], fps: row.fps ? Number(row.fps) : undefined, format: row.format as SubtitleRecord['format'],
       hearingImpaired: Boolean(row.hearingImpaired), fileName: String(row.fileName), fileSize: Number(row.fileSize), version: Number(row.version), verified: Boolean(row.verified),
       downloadCount: Number(row.downloadCount), status: row.status as SubtitleRecord['status'], createdAt: new Date(row.createdAt as Date).toISOString(), updatedAt: new Date(row.updatedAt as Date).toISOString(),
@@ -191,7 +192,7 @@ export async function getTranslatorBySlug(slug: string): Promise<TranslatorRecor
   await connectDb();
   const row = await TranslatorProfile.findOne({ slug }).lean();
   if (!row) return null;
-  return { id: String(row._id), slug: String(row.slug), displayName: String(row.displayName), avatarUrl: row.avatarUrl ? String(row.avatarUrl) : undefined, bio: String(row.bio ?? ''), joinedAt: new Date(row.createdAt as Date).toISOString(), verified: Boolean(row.verified), totalSubtitles: Number(row.totalSubtitles ?? 0), totalDownloads: Number(row.totalDownloads ?? 0), averageRating: Number(row.averageRating ?? 0) };
+  return { id: String(row._id), slug: String(row.slug), displayName: String(row.displayName), avatarUrl: resolvePublicAssetUrl(row.avatarUrl), bio: String(row.bio ?? ''), joinedAt: new Date(row.createdAt as Date).toISOString(), verified: Boolean(row.verified), totalSubtitles: Number(row.totalSubtitles ?? 0), totalDownloads: Number(row.totalDownloads ?? 0), averageRating: Number(row.averageRating ?? 0) };
 }
 
 export async function getTranslatorSubtitles(translatorId: string) {
@@ -205,7 +206,7 @@ export async function getSearchSuggestions(query: string) {
   const movieItems = movies.slice(0, 6).map((movie) => ({ type: 'movie', title: movie.title, subtitle: `${movie.year} · ${movie.genres[0] ?? 'Movie'}`, slug: movie.slug, image: movie.posterUrl }));
   const seriesItems = series.filter((item) => [item.title, item.sinhalaTitle, ...item.genres].filter(Boolean).some((value) => normalize(String(value)).includes(q))).slice(0, 4).map((item) => ({ type: 'series', title: item.title, subtitle: `${item.year} · TV Series`, slug: item.slug, image: item.posterUrl }));
   const translatorRows = useDemoData ? demoTranslators : await TranslatorProfile.find({ displayName: { $regex: query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' } }).select('displayName slug avatarUrl').limit(3).lean();
-  const translatorItems = translatorRows.filter((item) => normalize(String(item.displayName)).includes(q)).slice(0, 3).map((item) => ({ type: 'translator', title: String(item.displayName), subtitle: 'Subtitle translator', slug: String(item.slug), image: item.avatarUrl ? String(item.avatarUrl) : undefined }));
+  const translatorItems = translatorRows.filter((item) => normalize(String(item.displayName)).includes(q)).slice(0, 3).map((item) => ({ type: 'translator', title: String(item.displayName), subtitle: 'Subtitle translator', slug: String(item.slug), image: resolvePublicAssetUrl(item.avatarUrl) }));
   const subtitleItems = subtitles.filter((item) => normalize(item.contentTitle).includes(q)).slice(0, 3).map((item) => ({ type: 'subtitle', title: `${item.contentTitle} · ${item.language}`, subtitle: `${item.format.toUpperCase()} · ${item.downloadCount.toLocaleString()} downloads`, slug: item.contentSlug, href: `${item.contentHref ?? `/movies/${item.contentSlug}`}#subtitles`, image: item.contentPosterUrl }));
   return [...movieItems, ...seriesItems, ...translatorItems, ...subtitleItems].slice(0, 10);
 }

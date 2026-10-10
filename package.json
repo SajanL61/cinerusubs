@@ -14,6 +14,7 @@
     "seed": "tsx scripts/seed.ts",
     "test-db": "node --env-file=.env.local --import tsx scripts/test-db-connection.ts",
     "create-super-admin": "node --env-file=.env.local --import tsx scripts/create-super-admin.ts",
+    "audit-public-assets": "node --env-file=.env.local --import tsx scripts/audit-public-asset-urls.ts",
     "typecheck": "next typegen && tsc --noEmit",
     "lint": "eslint . --max-warnings=0",
     "test": "vitest run",

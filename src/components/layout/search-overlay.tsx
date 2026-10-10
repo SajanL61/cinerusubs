@@ -1,9 +1,9 @@
 'use client';
 
 import { ArrowRight, Clock3, Search, TrendingUp, X } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
+import { SafeImage } from '@/components/ui/safe-image';
 
 type Suggestion = { type: string; title: string; subtitle: string; slug: string; href?: string; image?: string };
 const RECENT_KEY = 'cinerusubs-recent-searches-v1';
@@ -62,7 +62,7 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
           <div className="search-state"><span>Results for “{query}”</span>{loading && <i>Searching…</i>}</div>
           <div className="suggestion-list">
             {!loading && items.map((item) => <Link key={`${item.type}-${item.slug}`} href={destination(item)} onClick={() => { remember(query.trim()); onClose(); }}>
-              <span className="suggestion-image">{item.image ? <Image src={item.image} alt="" fill sizes="52px" /> : <Search />}</span>
+              <span className="suggestion-image">{item.image ? <SafeImage src={item.image} fallbackSrc="/media/fallback-poster.svg" alt="" fill sizes="52px" /> : <Search />}</span>
               <span><b>{item.title}</b><small>{item.subtitle}</small></span><em>{item.type}</em><ArrowRight />
             </Link>)}
             {!loading && !items.length && <div className="no-suggestions"><Search /><b>No exact matches</b><p>Try a title, actor, language or translator name.</p><Link href={`/search?q=${encodeURIComponent(query)}`} onClick={() => { remember(query.trim()); onClose(); }}>Search all content</Link></div>}

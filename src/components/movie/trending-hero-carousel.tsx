@@ -1,11 +1,11 @@
 'use client';
 
 import { ChevronLeft, ChevronRight, Info, Pause, Play, ShieldCheck } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { TrailerDialog } from '@/components/movie/trailer-dialog';
 import { WatchlistButton } from '@/components/movie/watchlist-button';
+import { SafeImage } from '@/components/ui/safe-image';
 import type { MovieRecord } from '@/types/content';
 
 const ROTATION_INTERVAL = 3_000;
@@ -77,7 +77,7 @@ export function TrendingHeroCarousel({ movies }: { movies: MovieRecord[] }) {
       <div className="hero-carousel-backdrops" aria-hidden="true">
         {movies.map((item, index) => (
           <div className={`hero-backdrop hero-carousel-backdrop${index === current ? ' active' : ''}`} key={item.id}>
-            <Image src={item.backdropUrl} alt="" fill priority={index === 0} sizes="100vw" />
+            <SafeImage src={item.backdropUrl} fallbackSrc="/media/fallback-backdrop.svg" alt="" fill priority={index === 0} sizes="100vw" />
           </div>
         ))}
       </div>

@@ -1,6 +1,7 @@
 import 'server-only';
 import { isValidObjectId } from 'mongoose';
 import { connectDb } from '@/lib/db';
+import { resolvePublicAssetUrl } from '@/lib/assets';
 import { assertMediaDistributionAllowed } from '@/lib/rights';
 import { signedStreamUrl } from '@/lib/r2';
 import { Episode, MediaAsset, MediaVersion, Movie, Series } from '@/models';
@@ -25,7 +26,7 @@ export async function getPlayableMedia(mediaId: string) {
   const adaptive = Boolean(version.streamingManifestKey);
   return {
     id: String(version._id), contentId: String(content._id), contentType: version.contentType as 'movie' | 'episode', title: String(content.title),
-    slug: String(content.slug), seriesSlug, posterUrl: String(content.posterUrl || content.thumbnailUrl || '/media/fallback-backdrop.svg'),
+    slug: String(content.slug), seriesSlug, posterUrl: resolvePublicAssetUrl(content.posterUrl || content.thumbnailUrl, '/media/fallback-backdrop.svg')!,
     quality: String(version.resolution || version.quality || 'HD'), releaseType: String(version.releaseType || 'Authorized release'),
     streamUrl: await signedStreamUrl(streamKey, adaptive ? 'application/vnd.apple.mpegurl' : String(asset.mimeType || 'video/mp4'), 600, 'media'),
     mimeType: adaptive ? 'application/vnd.apple.mpegurl' : String(asset.mimeType || 'video/mp4'),

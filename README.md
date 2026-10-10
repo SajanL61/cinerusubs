@@ -55,7 +55,7 @@ Set every required value in `.env.example`. Production startup fails closed when
 
 The platform enforces rights at both presentation and data-delivery boundaries. Full media is available only when both the title and media version are active and marked `owned`, `licensed`, or `public_domain`. `subtitle_only` and `unavailable` titles expose metadata, trailers, community features, and subtitle downloads only.
 
-Keep both `cinerusubs-media` and `cinerusubs-assets` private. Configure upload CORS for the exact site origin, expose only intentionally public artwork through `assets.cinerusubs.com`, and route protected file traffic through `dl.cinerusubs.com` or the built-in token-validated route. Never expose R2 credentials through `NEXT_PUBLIC_*` variables.
+Keep `cinerusubs-media` private. Configure upload CORS for the exact site origin, expose only intentionally public artwork from `cinerusubs-assets` through the configured `PUBLIC_ASSET_DOMAIN`, and route protected file traffic through the configured `DOWNLOAD_DOMAIN` or the built-in token-validated route. Never expose R2 credentials through `NEXT_PUBLIC_*` variables.
 
 See [operations](docs/OPERATIONS.md), [download architecture](docs/DOWNLOAD_ARCHITECTURE.md), [SmartReact protection](docs/SMARTREACT_PROTECTION.md), [migration audit](docs/MIGRATION_AUDIT.md), and [environment template](.env.example) for deployment and security details.
 

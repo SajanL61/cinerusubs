@@ -3,7 +3,7 @@ main = "src/index.js"
 compatibility_date = "2026-10-01"
 
 routes = [
-  { pattern = "dl.cinerusubs.com/*", zone_name = "cinerusubs.com" }
+  { pattern = "dl.cineseya.lk/*", zone_name = "cineseya.lk" }
 ]
 
 [[r2_buckets]]

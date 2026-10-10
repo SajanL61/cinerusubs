@@ -1,9 +1,9 @@
 'use client';
 
 import { CheckCircle2, ChevronDown, Download, ExternalLink, HardDriveDownload, RotateCcw, ShieldCheck, X } from 'lucide-react';
-import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { SafeImage } from '@/components/ui/safe-image';
 import type { DownloadMirrorDto, MediaVersionDto } from '@/types/media';
 
 const size = (bytes: number) => bytes >= 1_000_000_000 ? `${(bytes / 1_000_000_000).toFixed(1)} GB` : `${Math.max(1, bytes / 1_000_000).toFixed(0)} MB`;
@@ -38,6 +38,6 @@ export function DownloadOptions({ title, posterUrl, versions }: { title: string;
   const closeButton = useRef<HTMLButtonElement>(null);
   useEffect(() => { if (!open) return; const prior = document.body.style.overflow; document.body.style.overflow = 'hidden'; closeButton.current?.focus(); const key = (event: KeyboardEvent) => { if (event.key === 'Escape') setOpen(false); }; window.addEventListener('keydown', key); return () => { document.body.style.overflow = prior; window.removeEventListener('keydown', key); }; }, [open]);
   if (!versions.length) return null;
-  const dialog = open ? <div className="download-dialog-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setOpen(false); }}><section className="download-dialog" role="dialog" aria-modal="true" aria-labelledby="download-dialog-title"><header><div className="download-dialog-title"><span><Image src={posterUrl} alt="" fill sizes="64px"/></span><div><small>Download options</small><h2 id="download-dialog-title">{title}</h2><p>Choose a verified quality and source.</p></div></div><button ref={closeButton} type="button" aria-label="Close download options" onClick={() => setOpen(false)}><X/></button></header><div className="download-dialog-body">{versions.map((version) => <VersionGroup version={version} key={version.id}/>)}</div><footer><CheckCircle2/><span>Every source shown here is attached by an administrator. CineSeya.lk never uses fake verification steps.</span></footer></section></div> : null;
+  const dialog = open ? <div className="download-dialog-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setOpen(false); }}><section className="download-dialog" role="dialog" aria-modal="true" aria-labelledby="download-dialog-title"><header><div className="download-dialog-title"><span><SafeImage src={posterUrl} fallbackSrc="/media/fallback-poster.svg" alt="" fill sizes="64px"/></span><div><small>Download options</small><h2 id="download-dialog-title">{title}</h2><p>Choose a verified quality and source.</p></div></div><button ref={closeButton} type="button" aria-label="Close download options" onClick={() => setOpen(false)}><X/></button></header><div className="download-dialog-body">{versions.map((version) => <VersionGroup version={version} key={version.id}/>)}</div><footer><CheckCircle2/><span>Every source shown here is attached by an administrator. CineSeya.lk never uses fake verification steps.</span></footer></section></div> : null;
   return <><button className="action-button download-open-button" type="button" onClick={() => setOpen(true)}><Download/>Download</button>{dialog ? createPortal(dialog, document.body) : null}</>;
 }

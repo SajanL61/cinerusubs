@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { connectDb } from './db';
 import { env, useDemoData } from './env';
+import { resolvePublicAssetUrl } from './assets';
 import { hashPrivateValue, hashToken, randomToken, safeEqual } from './security';
 import { Session, User } from '@/models';
 import { ROLE_PERMISSIONS, type AuthSession, type AuthUser, type Permission, type Role } from '@/types/auth';
@@ -27,7 +28,7 @@ function userDto(document: Record<string, unknown>): AuthUser {
     email: String(document.email),
     role,
     permissions: effectivePermissions(role, document.permissions),
-    avatarUrl: document.avatarKey ? `${env.PUBLIC_ASSET_DOMAIN}/${String(document.avatarKey)}` : undefined,
+    avatarUrl: resolvePublicAssetUrl(document.avatarKey),
     locale: document.locale === 'si' ? 'si' : 'en',
   };
 }

@@ -22,7 +22,7 @@ The uploader uses single-part presigned `PUT` for small files and 100 MiB multip
 3. The branded `/download/<media-version-id>` page shows an honest three-second preparation state.
 4. `/api/download/<media-version-id>` rate-limits the requester, reloads title/version rights and state, checks the active asset, and creates a 90-second opaque AES-256-GCM payload with an HMAC-SHA-256 signature.
 5. `/api/download/file/<token>` verifies and decrypts the token, repeats live authorization and object-scope checks, increments counters, and records the event.
-6. With `DOWNLOAD_WORKER_ENABLED=false`, the gateway redirects to a short-lived R2 attachment URL. With the Worker enabled, it redirects to `dl.cinerusubs.com/v1/files/<token>`; the Worker verifies signature, expiry, media-bucket scope, and object key, then streams the R2 object with `GET`, `HEAD`, byte-range, `206`, `Content-Range`, and `Accept-Ranges` support.
+6. With `DOWNLOAD_WORKER_ENABLED=false`, the gateway redirects to a short-lived R2 attachment URL. With the Worker enabled, it redirects to `${DOWNLOAD_DOMAIN}/v1/files/<token>`; the Worker verifies signature, expiry, media-bucket scope, and object key, then streams the R2 object with `GET`, `HEAD`, byte-range, `206`, `Content-Range`, and `Accept-Ranges` support.
 
 Tokens carry no credentials. They expire quickly, are scoped to one bucket/key/version, and are sent only through no-store pages and responses. Rotating `DOWNLOAD_SIGNING_SECRET` invalidates outstanding tokens.
 

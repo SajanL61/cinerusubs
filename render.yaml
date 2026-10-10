@@ -38,9 +38,9 @@ services:
       - key: R2_ASSETS_BUCKET
         value: cinerusubs-assets
       - key: PUBLIC_ASSET_DOMAIN
-        value: https://assets.cinerusubs.com
+        sync: false
       - key: DOWNLOAD_DOMAIN
-        value: https://dl.cinerusubs.com
+        sync: false
       - key: DOWNLOAD_WORKER_ENABLED
         value: false
       - key: TMDB_API_TOKEN

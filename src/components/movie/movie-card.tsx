@@ -1,6 +1,6 @@
 import { Play, Star } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
+import { SafeImage } from '@/components/ui/safe-image';
 import type { MovieRecord } from '@/types/content';
 import { WatchlistButton } from './watchlist-button';
 
@@ -31,7 +31,7 @@ export function MovieCard({ movie, priority = false }: { movie: MovieRecord; pri
   const badgeLabel = [badges.language, badges.source, badges.quality].filter(Boolean).join(', ');
   return <article className="movie-card">
     <div className="movie-card-art">
-      <Link href={`/movies/${movie.slug}`} aria-label={`View ${movie.title}`}><Image src={movie.posterUrl} alt={`${movie.title} poster`} fill priority={priority} sizes="(max-width: 520px) 42vw, (max-width: 1000px) 25vw, 190px" /></Link>
+      <Link href={`/movies/${movie.slug}`} aria-label={`View ${movie.title}`}><SafeImage src={movie.posterUrl} fallbackSrc="/media/fallback-poster.svg" alt={`${movie.title} poster`} fill priority={priority} sizes="(max-width: 520px) 42vw, (max-width: 1000px) 25vw, 190px" /></Link>
       {badgeLabel && <div className="movie-category-badges" aria-label={`Media details: ${badgeLabel}`}>
         {badges.language && <span className="badge-language">{badges.language}</span>}
         {badges.source && <span className="badge-source">{badges.source}</span>}

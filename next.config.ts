@@ -1,6 +1,17 @@
 import type { NextConfig } from 'next';
 
-const assetHost = new URL(process.env.PUBLIC_ASSET_DOMAIN ?? 'https://assets.cinerusubs.com').hostname;
+const configuredUrl = (name: string) => {
+  const value = process.env[name]?.trim();
+  if (!value) return undefined;
+  const url = new URL(value);
+  if (url.protocol !== 'https:' || url.username || url.password) throw new Error(`${name} must be a credential-free HTTPS URL.`);
+  return url;
+};
+const assetUrl = configuredUrl('PUBLIC_ASSET_DOMAIN');
+const downloadUrl = configuredUrl('DOWNLOAD_DOMAIN');
+const imageSources = ["'self'", 'data:', 'blob:', 'https://image.tmdb.org', assetUrl?.origin].filter(Boolean).join(' ');
+const connectSources = ["'self'", 'https://*.r2.cloudflarestorage.com', downloadUrl?.origin].filter(Boolean).join(' ');
+const mediaSources = ["'self'", 'blob:', 'https://*.r2.cloudflarestorage.com', downloadUrl?.origin].filter(Boolean).join(' ');
 
 const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
@@ -15,10 +26,10 @@ const securityHeaders = [
       "default-src 'self'",
       `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''}`,
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https://image.tmdb.org https://assets.cinerusubs.com",
+      `img-src ${imageSources}`,
       "font-src 'self' data:",
-      "connect-src 'self' https://*.r2.cloudflarestorage.com https://*.cinerusubs.com",
-      "media-src 'self' blob: https://*.r2.cloudflarestorage.com https://*.cinerusubs.com",
+      `connect-src ${connectSources}`,
+      `media-src ${mediaSources}`,
       "frame-src https://www.youtube-nocookie.com",
       "worker-src 'self' blob:",
       "object-src 'none'",
@@ -40,7 +51,7 @@ const nextConfig: NextConfig = {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       { protocol: 'https', hostname: 'image.tmdb.org', pathname: '/t/p/**' },
-      { protocol: 'https', hostname: assetHost, pathname: '/**' },
+      ...(assetUrl ? [{ protocol: 'https' as const, hostname: assetUrl.hostname, port: assetUrl.port, pathname: '/**' }] : []),
     ],
   },
   async headers() {

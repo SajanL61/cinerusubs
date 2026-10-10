@@ -1,5 +1,10 @@
 import { z } from 'zod';
 
+const optionalUrl = z.preprocess(
+  (value) => typeof value === 'string' && value.trim() === '' ? undefined : value,
+  z.url().optional(),
+);
+
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   NEXT_PUBLIC_SITE_URL: z.url().default('http://localhost:4001'),
@@ -15,8 +20,8 @@ const envSchema = z.object({
   R2_ENDPOINT: z.url().optional(),
   R2_MEDIA_BUCKET: z.string().default('cinerusubs-media'),
   R2_ASSETS_BUCKET: z.string().default('cinerusubs-assets'),
-  PUBLIC_ASSET_DOMAIN: z.url().default('https://assets.cinerusubs.com'),
-  DOWNLOAD_DOMAIN: z.url().default('https://dl.cinerusubs.com'),
+  PUBLIC_ASSET_DOMAIN: optionalUrl,
+  DOWNLOAD_DOMAIN: optionalUrl,
   DOWNLOAD_WORKER_ENABLED: z.enum(['true', 'false']).default('false'),
   TMDB_API_TOKEN: z.string().optional(),
   TURNSTILE_SECRET_KEY: z.string().optional(),
@@ -27,6 +32,7 @@ if (!parsed.success) throw new Error(`Invalid environment configuration: ${parse
 
 export const env = parsed.data;
 export const siteUrl = env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '');
+export const publicAssetOrigin = env.PUBLIC_ASSET_DOMAIN ? new URL(env.PUBLIC_ASSET_DOMAIN).origin : undefined;
 export const useDemoData = env.CINERUSUBS_DEMO_MODE === 'true' || !env.MONGODB_URI;
 
 export function assertProductionEnvironment() {
@@ -39,6 +45,8 @@ export function assertProductionEnvironment() {
   if (!env.R2_MEDIA_BUCKET) missing.push('R2_MEDIA_BUCKET');
   if (!env.R2_ASSETS_BUCKET) missing.push('R2_ASSETS_BUCKET');
   if (env.R2_MEDIA_BUCKET === env.R2_ASSETS_BUCKET) missing.push('separate R2_MEDIA_BUCKET and R2_ASSETS_BUCKET values');
+  if (!publicAssetOrigin) missing.push('PUBLIC_ASSET_DOMAIN');
+  if (env.DOWNLOAD_WORKER_ENABLED === 'true' && !env.DOWNLOAD_DOMAIN) missing.push('DOWNLOAD_DOMAIN');
   if (env.SESSION_SECRET.startsWith('development-')) missing.push('SESSION_SECRET');
   if (env.DOWNLOAD_SIGNING_SECRET.startsWith('development-')) missing.push('DOWNLOAD_SIGNING_SECRET');
   if (!env.NEXT_PUBLIC_SITE_URL.startsWith('https://')) missing.push('NEXT_PUBLIC_SITE_URL (HTTPS)');

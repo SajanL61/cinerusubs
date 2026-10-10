@@ -1,7 +1,7 @@
 import { isValidObjectId } from 'mongoose';
 import { assertMutationRequest, currentSession } from '@/lib/auth';
+import { resolvePublicAssetUrl } from '@/lib/assets';
 import { connectDb } from '@/lib/db';
-import { env } from '@/lib/env';
 import { apiError } from '@/lib/http';
 import { inspectObject, r2BucketKindFromName, readObjectBytes } from '@/lib/r2';
 import { validateSubtitleArchive } from '@/lib/validation/upload';
@@ -29,12 +29,14 @@ export async function POST(request: Request, { params }: RouteContext<'/api/admi
 
     let archiveMetadata: Record<string, number> | undefined;
     if (asset.kind === 'subtitle' && String(asset.fileName).toLocaleLowerCase().endsWith('.zip')) archiveMetadata = await validateSubtitleArchive(await readObjectBytes(String(asset.objectKey), bucketKind));
+    const isPublic = ['poster', 'backdrop', 'avatar', 'other'].includes(String(asset.kind));
+    const publicUrl = isPublic ? resolvePublicAssetUrl(asset.objectKey) : undefined;
+    if (isPublic && !publicUrl) throw Object.assign(new Error('PUBLIC_ASSET_DOMAIN is required to publish uploaded artwork.'), { status: 503, code: 'PUBLIC_ASSET_DOMAIN_REQUIRED' });
     asset.status = 'active';
     asset.metadata = { ...(asset.metadata as Record<string, unknown> | undefined), etag: remote.ETag, verifiedAt: new Date(), ...archiveMetadata };
     await asset.save();
     await AuditLog.create({ actor: session.user.id, action: 'media.activate', entity: 'MediaAsset', entityId: assetId, metadata: { kind: asset.kind, objectKey: asset.objectKey, bucket: asset.bucket } });
-    const isPublic = ['poster', 'backdrop', 'avatar', 'other'].includes(String(asset.kind));
-    return Response.json({ asset: { id: assetId, objectKey: asset.objectKey, bucket: asset.bucket, kind: asset.kind, fileName: asset.fileName, size: asset.size, status: asset.status, url: isPublic ? `${env.PUBLIC_ASSET_DOMAIN}/${asset.objectKey}` : undefined } });
+    return Response.json({ asset: { id: assetId, objectKey: asset.objectKey, bucket: asset.bucket, kind: asset.kind, fileName: asset.fileName, size: asset.size, status: asset.status, publicUrl } });
   } catch (error) {
     return apiError(error);
   }

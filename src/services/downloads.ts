@@ -1,6 +1,7 @@
 import 'server-only';
 import { isValidObjectId } from 'mongoose';
 import { connectDb } from '@/lib/db';
+import { resolvePublicAssetUrl } from '@/lib/assets';
 import { r2Configured } from '@/lib/r2';
 import { assertMediaDistributionAllowed, mayDistributeFullMedia } from '@/lib/rights';
 import { useDemoData } from '@/lib/env';
@@ -86,6 +87,6 @@ export async function getDownloadPageData(mediaVersionId: string) {
       backHref = `/tv/${String(series?.slug ?? '')}`;
     }
     const mirrors = await DownloadMirror.find({ mediaVersion: version._id, active: true }).select('-url').sort({ priority: 1 }).lean();
-    return { version: versionDto(version as LeanRecord, true, mirrors.map((mirror) => mirrorDto(mirror as LeanRecord))), title: String(content.title), posterUrl: String(content.posterUrl ?? content.thumbnailUrl ?? '/media/fallback-poster.svg'), backHref };
+    return { version: versionDto(version as LeanRecord, true, mirrors.map((mirror) => mirrorDto(mirror as LeanRecord))), title: String(content.title), posterUrl: resolvePublicAssetUrl(content.posterUrl ?? content.thumbnailUrl, '/media/fallback-poster.svg')!, backHref };
   } catch { return null; }
 }

@@ -54,7 +54,7 @@ Apply this CORS policy to both `cinerusubs-assets` and `cinerusubs-media` (add s
 ```
 
 Keep `cinerusubs-media` private. The server-side R2 diagnostic verifies authenticated object write/HEAD/read/delete access, while the browser upload test verifies this CORS policy.
-- Map `assets.cinerusubs.com` only to intentionally public artwork. Do not expose `cinerusubs-media` through an R2 public-development URL.
+- Map the configured `PUBLIC_ASSET_DOMAIN` only to intentionally public artwork in `cinerusubs-assets`. Do not expose `cinerusubs-media` through an R2 public-development URL.
 - The deployable Worker is in `cloudflare/download-worker`. Copy `wrangler.toml.example` to `wrangler.toml`, set `DOWNLOAD_SIGNING_SECRET` with `wrangler secret put`, and deploy. Enable `DOWNLOAD_WORKER_ENABLED=true` only after an invalid token returns `403` and a real range request returns `206` with `Accept-Ranges: bytes`.
 - The application checks title/version rights, active/deletion state, object scope, and rate limits before issuing a 90-second encrypted and signed token. The built-in gateway repeats live checks. The Worker verifies signature, expiry, and bucket/key scope; the short lifetime limits the window after a rights change.
 - Proxy `www.cinerusubs.com` through Cloudflare, enforce HTTPS, enable managed WAF rules, and add rate-limit rules for `/api/auth/*`, `/api/search/*`, `/api/subtitles/*/download`, `/download/*`, `/api/contact`, and `/api/takedown`.
